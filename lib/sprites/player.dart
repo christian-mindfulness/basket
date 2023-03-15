@@ -1,6 +1,8 @@
 import 'dart:math';
 
 import 'package:basket/game/basket_game.dart';
+import 'package:basket/sprites/circles.dart';
+import 'package:basket/sprites/walls.dart';
 import 'package:flame/collisions.dart';
 import 'package:flame/components.dart';
 // import 'package:flame/events.dart';
@@ -10,7 +12,7 @@ import 'package:flutter/services.dart';
 class Player extends SpriteComponent with HasGameRef<BasketBall>, KeyboardHandler, CollisionCallbacks {
   Player()
       : super(
-    size: Vector2.all(50.0),
+    size: Vector2.all(30.0),
     anchor: Anchor.center,
   );
 
@@ -18,7 +20,7 @@ class Player extends SpriteComponent with HasGameRef<BasketBall>, KeyboardHandle
   static const double _kickScale = 200;
   static const double _gravity = 10;
   Vector2 oldPosition = Vector2(0, 0);
-  static const double _radius = 25;
+  static const double _radius = 15;
 
   @override
   Future<void> onLoad() async {
@@ -60,13 +62,53 @@ class Player extends SpriteComponent with HasGameRef<BasketBall>, KeyboardHandle
     //   print('Collision points $point');
     // }
 
-    Vector2 topLeft = Vector2(other.absoluteTopLeftPosition.x, other.absoluteTopLeftPosition.y);
-    Vector2 topRight = Vector2(other.absoluteTopLeftPosition.x + other.width, other.absoluteTopLeftPosition.y);
-    Vector2 bottomLeft = Vector2(other.absoluteTopLeftPosition.x, other.absoluteTopLeftPosition.y + other.height);
-    Vector2 bottomRight = Vector2(other.absoluteTopLeftPosition.x + other.width, other.absoluteTopLeftPosition.y + other.height);
+    double coefficient;
+    if (other is Wall) {
+      coefficient = other.getCoefficient();
+      rectangleCollision(other, coefficient);
+    } else if (other is MyCircle) {
+      coefficient = other.getCoefficient();
+      circleCollision(other, coefficient);
+    } else {
+      coefficient = 0.6;
+      rectangleCollision(other, coefficient);
+    }
+  }
+
+  void circleCollision(MyCircle other, double coefficient) {
+    double startDistance = oldPosition.distanceTo(other.absoluteCenter);
+    double endDistance = position.distanceTo(other.absoluteCenter);
+    double collisionTime = calcTime(startDistance, endDistance, _radius + other.getRadius());
+    Vector2 location = collisionLocation(collisionTime, oldPosition, position);
+    Vector2 normal = (other.absoluteCenter - location).normalized();
+    print('Normal: $normal');
+    _velocity = reflect(_velocity, normal, coefficient);
+    position = location + _velocity.normalized() * (1-collisionTime) * (position.distanceTo(oldPosition));
+  }
+
+  void rectangleCollision(PositionComponent other, double coefficient) {
+    double cornerDistance = sqrt(pow(other.width / 2, 2) + pow(other.height / 2, 2));
+    double theta = atan(other.height / other.width);
+    Vector2 topLeft = Vector2(other.absoluteCenter.x + cornerDistance * cos(theta + other.angle),
+        other.absoluteCenter.y + cornerDistance * sin(theta + other.angle));
+    Vector2 topRight = Vector2(other.absoluteCenter.x + cornerDistance * cos(-theta + other.angle + pi),
+        other.absoluteCenter.y + cornerDistance * sin(-theta + other.angle + pi));
+    Vector2 bottomRight = Vector2(other.absoluteCenter.x + cornerDistance * cos(theta + other.angle + pi),
+        other.absoluteCenter.y + cornerDistance * sin(theta + other.angle + pi));
+    Vector2 bottomLeft = Vector2(other.absoluteCenter.x + cornerDistance * cos(other.angle - theta),
+        other.absoluteCenter.y + cornerDistance * sin(other.angle - theta));
+
+    // print('Centre: ${other.absoluteCenter}');
+    // print('Corner distance = $cornerDistance');
+    // print('Angles: $theta ${other.angle} ${theta + other.angle + pi/2} ${cos(theta + other.angle + pi/2)}');
+    // print('Cos: ${cos(theta + other.angle)} ${cos(theta + other.angle + 0.5 * pi)} ${cos(theta + other.angle + pi)} ${cos(theta + other.angle + 1.5 * pi)}');
 
     List<Vector2> corners = [topLeft, topRight, bottomRight, bottomLeft];
     List<String> cornerNames = ['topLeft', 'topRight', 'bottomRight', 'bottomLeft'];
+
+    // for (int i=0; i<corners.length; i++) {
+    //   print('${cornerNames[i]}: ${corners[i]}');
+    // }
 
     List<double> collisionTimes = [];
     List<String> collisionNames = [];
@@ -103,12 +145,16 @@ class Player extends SpriteComponent with HasGameRef<BasketBall>, KeyboardHandle
       } else {
         normal = (location - collisionCorners[colIndex][0]).normalized();
       }
-      _velocity.reflect(normal);
+      _velocity = reflect(_velocity, normal, coefficient);
       position = location + _velocity.normalized() * (1-colTime) * (position.distanceTo(oldPosition));
     } else {
       print('No collision');
       gameRef.pauseEngine();
     }
+  }
+
+  Vector2 reflect(Vector2 velocity, Vector2 normal, double coefficient) {
+    return velocity - normal.scaled((1+coefficient) * normal.dot(velocity));
   }
 
   double pointLineDistance(Vector2 point, Vector2 corner1, Vector2 corner2) {
@@ -193,4 +239,7 @@ class Player extends SpriteComponent with HasGameRef<BasketBall>, KeyboardHandle
     return calcTime(startDistance, endDistance, radius);
   }
 
+  void impulse(Vector2 size) {
+    _velocity += size;
+  }
 }

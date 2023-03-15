@@ -2,6 +2,7 @@ import 'package:flame/game.dart';
 import 'package:flutter/material.dart';
 
 import 'game/basket_game.dart';
+import 'overlays/game_overlay.dart';
 
 void main() {
   runApp(const MyApp());
@@ -54,13 +55,15 @@ class _MyHomePageState extends State<MyHomePage> {
             return Container(
               constraints: const BoxConstraints(
                 maxWidth: 800,
-                minWidth: 550,
+                minWidth: 400,
+                maxHeight: 1600,
+                minHeight: 800,
               ),
               child: GameWidget(
                 game: game,
-                overlayBuilderMap: const <String,
+                overlayBuilderMap: <String,
                     Widget Function(BuildContext, Game)>{
-                  //'gameOverlay': (context, game) => GameOverlay(game),
+                    'gameOverlay': (context, game) => GameOverlay(game),
                 },
               ),
             );
