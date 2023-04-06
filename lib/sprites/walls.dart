@@ -1,7 +1,6 @@
 import 'package:basket/game/basket_game.dart';
 import 'package:flame/collisions.dart';
 import 'package:flame/components.dart';
-import 'package:flutter/cupertino.dart';
 
 class Wall extends SpriteComponent
     with HasGameRef<BasketBall>, CollisionCallbacks {
@@ -11,7 +10,7 @@ class Wall extends SpriteComponent
   Wall({
     super.position,
     required Vector2 size,
-    this.coefficient = 0.5,
+    this.coefficient = 0.7,
     double angle = 0
   }) : super(
     size: size,
@@ -28,5 +27,20 @@ class Wall extends SpriteComponent
 
   double getCoefficient() {
     return coefficient;
+  }
+}
+
+
+class BrickWall extends Wall {
+  BrickWall({super.position,
+    required super.size,
+    super.coefficient,
+    super.angle,
+  });
+
+  @override
+  Future<void>? onLoad() async {
+    await super.onLoad();
+    sprite = await gameRef.loadSprite('game/brick_wall.png');
   }
 }

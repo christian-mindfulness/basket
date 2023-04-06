@@ -11,9 +11,13 @@ class GameOverlay extends StatefulWidget {
 }
 
 class GameOverlayState extends State<GameOverlay> {
+  bool isPaused = false;
   Vector2? locationStart;
   int? startTime;
   int endTime = DateTime.now().millisecondsSinceEpoch - 1000;
+  Color boxColour1 = Colors.green;
+  Color boxColour2 = Colors.green;
+  Color boxColour3 = Colors.green;
 
   @override
   Widget build(BuildContext context) {
@@ -29,20 +33,134 @@ class GameOverlayState extends State<GameOverlay> {
           // print('timeSinceLast = $timeSinceLast  $endTime   ${DateTime.now().millisecondsSinceEpoch}');
           if (locationStart != null && timeSinceLast > 1000) {
             //print('Change = ${locationEnd - locationStart!}');
-            Vector2 impulseSize = (locationEnd - locationStart!) * (100.0 / (currentTime - startTime!));
-            if (impulseSize.length > 400) {
-              impulseSize *= 400 / impulseSize.length;
+            Vector2 impulseSize = (locationEnd - locationStart!) * (150.0 / (currentTime - startTime!));
+            if (impulseSize.length > 500) {
+              impulseSize *= 500 / impulseSize.length;
             }
             print('impulseSize = $impulseSize');
             (widget.game as BasketBall).playerImpulse(impulseSize);
             endTime = currentTime;
             locationStart = null;
+            setState((){
+              boxColour1 = Colors.red;
+              boxColour2 = Colors.red;
+              boxColour3 = Colors.red;
+            });
+            Future.delayed(const Duration(milliseconds: 333), (){
+              setState((){
+                boxColour1 = Colors.green;
+              });
+            });
+            Future.delayed(const Duration(milliseconds: 667), (){
+              setState((){
+                boxColour2 = Colors.green;
+              });
+            });
+            Future.delayed(const Duration(milliseconds: 1000), (){
+              setState((){
+                boxColour3 = Colors.green;
+              });
+            });
           }
         },
         behavior: HitTestBehavior.translucent,
-        child: const SizedBox(
-      width: 800,
-      height: 800,
-    ));
+        child: SafeArea(
+          child: Stack(
+            children: [Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.start,
+              children: [
+                const SizedBox(height: 10,),
+                Row(mainAxisAlignment: MainAxisAlignment.start, children: [
+                  const SizedBox(width: 10,),
+                SizedBox(
+                    width: 10,
+                    height: 10,
+                    child: DecoratedBox(
+                        decoration: BoxDecoration(
+                            color: boxColour1
+                        ))),
+                const SizedBox(width: 10,),
+                SizedBox(
+                    width: 10,
+                    height: 10,
+                    child: DecoratedBox(
+                        decoration: BoxDecoration(
+                            color: boxColour2
+                        ))),
+                const SizedBox(width: 10,),
+                SizedBox(
+                    width: 10,
+                    height: 10,
+                    child: DecoratedBox(
+                        decoration: BoxDecoration(
+                            color: boxColour3
+                        ))),
+              ],)
+]),
+Positioned(
+top: 0,
+right: 20,
+    child: ElevatedButton(
+      style: ButtonStyle(backgroundColor: MaterialStateProperty.resolveWith<Color?>(
+            (Set<MaterialState> states) {
+              return Color(0xAA444444);
+        },
+      ),),
+    child: isPaused
+    ? const Icon(
+    Icons.play_arrow,
+    size: 48,
+    )
+        : const Icon(
+    Icons.pause,
+    size: 48,
+    ),
+    onPressed: () {
+    (widget.game as BasketBall).togglePauseState();
+    setState(
+    () {
+    isPaused = !isPaused;
+    },
+    );
+    },
+    ),
+    ),
+    isPaused ? Center(child: Column(mainAxisAlignment: MainAxisAlignment.center,
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [ElevatedButton(
+          style: ButtonStyle(backgroundColor: MaterialStateProperty.resolveWith<Color?>(
+                (Set<MaterialState> states) {
+              return const Color(0xAA444444);
+            },
+          ),),
+          child: const Text('Level 1'),
+          onPressed: (){
+            (widget.game as BasketBall).setLevel(1);
+            (widget.game as BasketBall).togglePauseState();
+            setState(
+                    () {
+                  isPaused = !isPaused;
+                },
+            );
+            },),
+          ElevatedButton(
+            style: ButtonStyle(backgroundColor: MaterialStateProperty.resolveWith<Color?>(
+                  (Set<MaterialState> states) {
+                return const Color(0xAA444444);
+              },
+            ),),
+            child: const Text('Level 2'),
+            onPressed: (){
+              (widget.game as BasketBall).setLevel(2);
+              (widget.game as BasketBall).togglePauseState();
+              setState(
+                    () {
+                  isPaused = !isPaused;
+                },
+              );
+            },),],),) :
+              const SizedBox(height: 10),]
+    )));
   }
 }

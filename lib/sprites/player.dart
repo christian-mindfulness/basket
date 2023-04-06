@@ -2,6 +2,7 @@ import 'dart:math';
 
 import 'package:basket/game/basket_game.dart';
 import 'package:basket/sprites/circles.dart';
+import 'package:basket/sprites/enemies.dart';
 import 'package:basket/sprites/walls.dart';
 import 'package:flame/collisions.dart';
 import 'package:flame/components.dart';
@@ -26,9 +27,15 @@ class Player extends SpriteComponent with HasGameRef<BasketBall>, KeyboardHandle
   Future<void> onLoad() async {
     super.onLoad();
     sprite = await gameRef.loadSprite('blue_ball.png');
-    position = gameRef.size / 2;
+    position = Vector2(200, 700);
     oldPosition = position;
     await add(CircleHitbox(radius: _radius));
+  }
+
+  void resetPosition() {
+    position = Vector2(200, 700);
+    _velocity = Vector2(0, 0);
+    print('Reset position $position $_velocity');
   }
 
   @override
@@ -66,9 +73,18 @@ class Player extends SpriteComponent with HasGameRef<BasketBall>, KeyboardHandle
     if (other is Wall) {
       coefficient = other.getCoefficient();
       rectangleCollision(other, coefficient);
+      other.hitBox.globalVertices();
     } else if (other is MyCircle) {
       coefficient = other.getCoefficient();
       circleCollision(other, coefficient);
+    } else if (other is Spike) {
+      polygonCollision(
+          other, other.hitBox.globalVertices(), other.deadlyVertices,
+          other.getCoefficient());
+    } else if (other is Star) {
+      polygonCollision(
+          other, other.hitBox.globalVertices(), other.deadlyVertices,
+          other.getCoefficient());
     } else {
       coefficient = 0.6;
       rectangleCollision(other, coefficient);
@@ -139,18 +155,71 @@ class Player extends SpriteComponent with HasGameRef<BasketBall>, KeyboardHandle
     if (colIndex >= 0) {
       Vector2 location = collisionLocation(colTime, oldPosition, absoluteCenter);
       Vector2 normal = Vector2(0,0);
+      Vector2 tangent = Vector2(0,0);
       if (collisionCorners[colIndex].length == 2) {
         Vector2 diff = collisionCorners[colIndex][0] - collisionCorners[colIndex][1];
         normal = diff.scaleOrthogonalInto(1 / diff.length, normal);
+        tangent = diff.normalized();
       } else {
         normal = (location - collisionCorners[colIndex][0]).normalized();
+        normal.scaleOrthogonalInto(1, tangent);
+        tangent = tangent.normalized();
       }
-      _velocity = reflect(_velocity, normal, coefficient);
+      _velocity = applyTangent(reflect(_velocity, normal, coefficient), tangent, 0.9);
       position = location + _velocity.normalized() * (1-colTime) * (position.distanceTo(oldPosition));
     } else {
       print('No collision');
       gameRef.pauseEngine();
     }
+  }
+
+  void polygonCollision(PositionComponent other, List<Vector2> corners, List<bool> deadlyVertices, double coefficient) {
+    List<double> collisionTimes = [];
+    List<List<Vector2>> collisionCorners = [];
+    for (int i=0; i<corners.length; i++) {
+      collisionTimes.add(collisionTimeLine(oldPosition, position, corners[i], corners[(i+1) % corners.length], _radius));
+      collisionCorners.add([corners[i], corners[(i+1) % corners.length]]);
+      collisionTimes.add(collisionTimeCorner(oldPosition, absoluteCenter, corners[i], _radius));
+      collisionCorners.add([corners[i]]);
+    }
+
+    double colTime = 100;
+    int colIndex = -1;
+    for (int i=0; i<collisionTimes.length; i++) {
+      if (collisionTimes[i] < colTime) {
+        colIndex = i;
+        colTime = collisionTimes[i];
+      }
+      colTime = max(colTime, 0);
+    }
+
+    if (colIndex >= 0) {
+      Vector2 location = collisionLocation(colTime, oldPosition, absoluteCenter);
+      Vector2 normal = Vector2(0,0);
+      Vector2 tangent = Vector2(0,0);
+      if (collisionCorners[colIndex].length == 2) {
+        Vector2 diff = collisionCorners[colIndex][0] - collisionCorners[colIndex][1];
+        normal = diff.scaleOrthogonalInto(1 / diff.length, normal);
+        tangent = diff.normalized();
+      } else {
+        normal = (location - collisionCorners[colIndex][0]).normalized();
+        normal.scaleOrthogonalInto(1, tangent);
+        tangent = tangent.normalized();
+        print('Actual corner');
+        if (deadlyVertices[-1+(colIndex+1)~/2]) {
+          print('Bang!');
+        }
+      }
+      _velocity = applyTangent(reflect(_velocity, normal, coefficient), tangent, 0.9);
+      position = location + _velocity.normalized() * (1-colTime) * (position.distanceTo(oldPosition));
+    } else {
+      print('No collision');
+      gameRef.pauseEngine();
+    }
+  }
+
+  Vector2 applyTangent(Vector2 velocity, Vector2 tangent, double coefficient) {
+    return velocity - tangent.scaled((1-coefficient) * tangent.dot(velocity));
   }
 
   Vector2 reflect(Vector2 velocity, Vector2 normal, double coefficient) {

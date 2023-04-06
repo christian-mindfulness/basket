@@ -46,26 +46,15 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        backgroundColor: Theme
-            .of(context)
-            .colorScheme
-            .background,
+        backgroundColor: Colors.black,
         body: Center(
           child: LayoutBuilder(builder: (context, constraints) {
-            return Container(
-              constraints: const BoxConstraints(
-                maxWidth: 800,
-                minWidth: 400,
-                maxHeight: 1600,
-                minHeight: 800,
-              ),
-              child: GameWidget(
-                game: game,
-                overlayBuilderMap: <String,
-                    Widget Function(BuildContext, Game)>{
-                    'gameOverlay': (context, game) => GameOverlay(game),
-                },
-              ),
+            return GameWidget(
+              game: game,
+              overlayBuilderMap: <String,
+                  Widget Function(BuildContext, Game)>{
+                  'gameOverlay': (context, game) => GameOverlay(game),
+              },
             );
           }
           ),
