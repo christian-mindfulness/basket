@@ -11,7 +11,6 @@ class GameOverlay extends StatefulWidget {
 }
 
 class GameOverlayState extends State<GameOverlay> {
-  bool isPaused = false;
   Vector2? locationStart;
   int? startTime;
   int endTime = DateTime.now().millisecondsSinceEpoch - 1000;
@@ -47,19 +46,25 @@ class GameOverlayState extends State<GameOverlay> {
               boxColour3 = Colors.red;
             });
             Future.delayed(const Duration(milliseconds: 333), (){
-              setState((){
-                boxColour1 = Colors.green;
-              });
+              if (mounted) {
+                setState((){
+                  boxColour1 = Colors.green;
+                });
+              }
             });
             Future.delayed(const Duration(milliseconds: 667), (){
-              setState((){
-                boxColour2 = Colors.green;
-              });
+              if (mounted) {
+                setState((){
+                  boxColour2 = Colors.green;
+                });
+              }
             });
             Future.delayed(const Duration(milliseconds: 1000), (){
-              setState((){
-                boxColour3 = Colors.green;
-              });
+              if (mounted) {
+                setState((){
+                  boxColour3 = Colors.green;
+                });
+              }
             });
           }
         },
@@ -107,7 +112,7 @@ right: 20,
               return Color(0xAA444444);
         },
       ),),
-    child: isPaused
+    child: (widget.game as BasketBall).isPaused()
     ? const Icon(
     Icons.play_arrow,
     size: 48,
@@ -118,15 +123,10 @@ right: 20,
     ),
     onPressed: () {
     (widget.game as BasketBall).togglePauseState();
-    setState(
-    () {
-    isPaused = !isPaused;
-    },
-    );
     },
     ),
     ),
-    isPaused ? Center(child: Column(mainAxisAlignment: MainAxisAlignment.center,
+              (widget.game as BasketBall).isPaused() ? Center(child: Column(mainAxisAlignment: MainAxisAlignment.center,
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [ElevatedButton(
           style: ButtonStyle(backgroundColor: MaterialStateProperty.resolveWith<Color?>(
@@ -138,11 +138,6 @@ right: 20,
           onPressed: (){
             (widget.game as BasketBall).setLevel(1);
             (widget.game as BasketBall).togglePauseState();
-            setState(
-                    () {
-                  isPaused = !isPaused;
-                },
-            );
             },),
           ElevatedButton(
             style: ButtonStyle(backgroundColor: MaterialStateProperty.resolveWith<Color?>(
@@ -154,11 +149,6 @@ right: 20,
             onPressed: (){
               (widget.game as BasketBall).setLevel(2);
               (widget.game as BasketBall).togglePauseState();
-              setState(
-                    () {
-                  isPaused = !isPaused;
-                },
-              );
             },),],),) :
               const SizedBox(height: 10),]
     )));

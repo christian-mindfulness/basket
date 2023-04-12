@@ -3,6 +3,7 @@ import 'dart:math';
 import 'package:basket/game/basket_game.dart';
 import 'package:basket/sprites/circles.dart';
 import 'package:basket/sprites/enemies.dart';
+import 'package:basket/sprites/goal.dart';
 import 'package:basket/sprites/walls.dart';
 import 'package:flame/collisions.dart';
 import 'package:flame/components.dart';
@@ -22,14 +23,16 @@ class Player extends SpriteComponent with HasGameRef<BasketBall>, KeyboardHandle
   static const double _gravity = 10;
   Vector2 oldPosition = Vector2(0, 0);
   static const double _radius = 15;
+  final CircleHitbox _hitBox = CircleHitbox(radius: _radius);
+  bool pauseNextTick = false;
 
   @override
   Future<void> onLoad() async {
     super.onLoad();
     sprite = await gameRef.loadSprite('blue_ball.png');
-    position = Vector2(200, 700);
+    position = Vector2(200, 750);
     oldPosition = position;
-    await add(CircleHitbox(radius: _radius));
+    await add(_hitBox);
   }
 
   void resetPosition() {
@@ -45,6 +48,10 @@ class Player extends SpriteComponent with HasGameRef<BasketBall>, KeyboardHandle
     oldPosition = Vector2(position.x, position.y);
     position += _velocity * dt;
     super.update(dt);
+    if (pauseNextTick) {
+      game.pause();
+      pauseNextTick = false;
+    }
   }
 
   @override
@@ -82,6 +89,13 @@ class Player extends SpriteComponent with HasGameRef<BasketBall>, KeyboardHandle
           other, other.hitBox.globalVertices(), other.deadlyVertices,
           other.getCoefficient());
     } else if (other is Star) {
+      polygonCollision(
+          other, other.hitBox.globalVertices(), other.deadlyVertices,
+          other.getCoefficient());
+    } else if (other is BasketGoal) {
+      if (_hitBox.collidingWith(other.goalHitBox)) {
+        game.victory();
+      }
       polygonCollision(
           other, other.hitBox.globalVertices(), other.deadlyVertices,
           other.getCoefficient());
@@ -207,14 +221,18 @@ class Player extends SpriteComponent with HasGameRef<BasketBall>, KeyboardHandle
         tangent = tangent.normalized();
         print('Actual corner');
         if (deadlyVertices[-1+(colIndex+1)~/2]) {
-          print('Bang!');
+          game.failed();
         }
       }
-      _velocity = applyTangent(reflect(_velocity, normal, coefficient), tangent, 0.9);
-      position = location + _velocity.normalized() * (1-colTime) * (position.distanceTo(oldPosition));
+      if (pauseNextTick) {
+        position = location;
+      } else {
+        position = location + _velocity.normalized() * (1-colTime) * (position.distanceTo(oldPosition));
+      }
+      _velocity = applyTangent(reflect(_velocity, normal, coefficient), tangent, 0.8);
     } else {
       print('No collision');
-      gameRef.pauseEngine();
+      //gameRef.pauseEngine();
     }
   }
 

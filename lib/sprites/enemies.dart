@@ -56,22 +56,37 @@ class Star extends SpriteComponent with HasGameRef<BasketBall>, CollisionCallbac
     anchor: Anchor.bottomLeft,
   ) {
     hitBox = PolygonHitbox([
-      Vector2(0.5 * size.x, 1.0 * size.y),
-      Vector2(0.5794168018485238 * size.x, 0.6431041321077906 * size.y),
-      Vector2(0.9009688679024191 * size.x, 0.8019377358048384 * size.y),
-      Vector2(0.6784479339461047 * size.x, 0.5157294715892572 * size.y),
-      Vector2(1.0 * size.x, 0.3568958678922095 * size.y),
-      Vector2(0.6431041321077907 * size.x, 0.35689586789220945 * size.y),
-      Vector2(0.7225209339563144 * size.x, 0.0 * size.y),
-      Vector2(0.5 * size.x, 0.28620826421558115 * size.y),
-      Vector2(0.27747906604368566 * size.x, 0.0 * size.y),
-      Vector2(0.3568958678922095 * size.x, 0.35689586789220945 * size.y),
-      Vector2(0.0 * size.x, 0.3568958678922094 * size.y),
-      Vector2(0.32155206605389525 * size.x, 0.5157294715892572 * size.y),
-      Vector2(0.09903113209758083 * size.x, 0.8019377358048382 * size.y),
-      Vector2(0.42058319815147616 * size.x, 0.6431041321077905 * size.y),
+      Vector2(0.5 * size.x, 0.0 * size.y),
+      Vector2(0.5794168018485238 * size.x, 0.3568958678922094 * size.y),
+      Vector2(0.9009688679024191 * size.x, 0.1980622641951616 * size.y),
+      Vector2(0.6784479339461047 * size.x, 0.4842705284107428 * size.y),
+      Vector2(1.0 * size.x, 0.6431041321077905 * size.y),
+      Vector2(0.6431041321077907 * size.x, 0.6431041321077906 * size.y),
+      Vector2(0.7225209339563144 * size.x, 0.9999999999999999 * size.y),
+      Vector2(0.5 * size.x, 0.7137917357844188 * size.y),
+      Vector2(0.27747906604368566 * size.x, 1.0 * size.y),
+      Vector2(0.3568958678922095 * size.x, 0.6431041321077906 * size.y),
+      Vector2(0.0 * size.x, 0.6431041321077906 * size.y),
+      Vector2(0.32155206605389525 * size.x, 0.4842705284107428 * size.y),
+      Vector2(0.09903113209758083 * size.x, 0.19806226419516182 * size.y),
+      Vector2(0.42058319815147616 * size.x, 0.3568958678922095 * size.y),
+
+      // Vector2(0.5 * size.x, 0.0 * size.y),
+      // Vector2(0.5794168018485238 * size.x, 0.6431041321077906 * size.y),
+      // Vector2(0.9009688679024191 * size.x, 0.8019377358048384 * size.y),
+      // Vector2(0.6784479339461047 * size.x, 0.5157294715892572 * size.y),
+      // Vector2(1.0 * size.x, 0.3568958678922095 * size.y),
+      // Vector2(0.6431041321077907 * size.x, 0.35689586789220945 * size.y),
+      // Vector2(0.7225209339563144 * size.x, 0.0 * size.y),
+      // Vector2(0.5 * size.x, 0.28620826421558115 * size.y),
+      // Vector2(0.27747906604368566 * size.x, 0.0 * size.y),
+      // Vector2(0.3568958678922095 * size.x, 0.35689586789220945 * size.y),
+      // Vector2(0.0 * size.x, 0.3568958678922094 * size.y),
+      // Vector2(0.32155206605389525 * size.x, 0.5157294715892572 * size.y),
+      // Vector2(0.09903113209758083 * size.x, 0.8019377358048382 * size.y),
+      // Vector2(0.42058319815147616 * size.x, 0.6431041321077905 * size.y),
     ]);
-    deadlyVertices = [false, true, false];
+    deadlyVertices = List.filled(14, true);
   }
 
   @override

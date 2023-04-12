@@ -1,8 +1,13 @@
 import 'package:flame/game.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import 'game/basket_game.dart';
+import 'overlays/failed_overlay.dart';
 import 'overlays/game_overlay.dart';
+import 'overlays/main_menu.dart';
+import 'overlays/tutorial_overlay.dart';
+import 'overlays/victory_overlay.dart';
 
 void main() {
   runApp(const MyApp());
@@ -45,6 +50,10 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage> {
   @override
   Widget build(BuildContext context) {
+    SystemChrome.setPreferredOrientations([
+      DeviceOrientation.portraitUp,
+      DeviceOrientation.portraitDown,
+    ]);
     return Scaffold(
         backgroundColor: Colors.black,
         body: Center(
@@ -54,6 +63,10 @@ class _MyHomePageState extends State<MyHomePage> {
               overlayBuilderMap: <String,
                   Widget Function(BuildContext, Game)>{
                   'gameOverlay': (context, game) => GameOverlay(game),
+                  'mainMenu': (context, game) => MainMenu(game),
+                  'victoryOverlay': (context, game) => VictoryOverlay(game),
+                  'failedOverlay': (context, game) => FailedOverlay(game),
+                  'tutorialOverlay': (context, game) => TutorialOverlay(game),
               },
             );
           }

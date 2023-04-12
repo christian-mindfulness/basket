@@ -44,3 +44,17 @@ class BrickWall extends Wall {
     sprite = await gameRef.loadSprite('game/brick_wall.png');
   }
 }
+
+class WoodWall extends Wall {
+  WoodWall({super.position,
+    required super.size,
+    super.coefficient,
+    super.angle,
+  });
+
+  @override
+  Future<void>? onLoad() async {
+    await super.onLoad();
+    sprite = await gameRef.loadSprite('game/wood_wall.png');
+  }
+}
