@@ -1,3 +1,6 @@
+import 'package:basket/game/world_editor.dart';
+import 'package:basket/overlays/editor_overlay.dart';
+import 'package:basket/widgets/resize_dialog.dart';
 import 'package:flame/game.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -38,7 +41,8 @@ class MyApp extends StatelessWidget {
   }
 }
 
-final Game game = BasketBall();
+//final Game game = BasketBall();
+final Game game = WorldEditorGame();
 
 class MyHomePage extends StatefulWidget {
   const MyHomePage({super.key, required this.title});
@@ -67,11 +71,52 @@ class _MyHomePageState extends State<MyHomePage> {
                   'victoryOverlay': (context, game) => VictoryOverlay(game),
                   'failedOverlay': (context, game) => FailedOverlay(game),
                   'tutorialOverlay': (context, game) => TutorialOverlay(game),
+                  'editorOverlay': (context, game) => EditorOverlay(game),
+                  'resizeOverlay': (context, game) => NewOverlay(game),
               },
             );
           }
           ),
-        )
+        ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          debugPrint('Hello');
+        },
+        tooltip: 'Increment',
+        child: const Icon(Icons.add),
+      ), // This trailing comma makes auto-formatting nicer for build methods.
     );
   }
+
+  Widget _offsetPopup() => PopupMenuButton<int>(
+      itemBuilder: (context) => [
+        const PopupMenuItem(
+          value: 1,
+          child: Text(
+            "Flutter Open",
+            style: TextStyle(
+                color: Colors.black, fontWeight: FontWeight.w700),
+          ),
+        ),
+        const PopupMenuItem(
+          value: 2,
+          child: Text(
+            "Flutter Tutorial",
+            style: TextStyle(
+                color: Colors.black, fontWeight: FontWeight.w700),
+          ),
+        ),
+      ],
+      icon: Container(
+        height: double.infinity,
+        width: double.infinity,
+        decoration: const ShapeDecoration(
+            color: Colors.blue,
+            shape: StadiumBorder(
+              side: BorderSide(color: Colors.white, width: 2),
+            )
+        ),
+        //child: Icon(Icons.menu, color: Colors.white), <-- You can give your icon here
+      )
+  );
 }

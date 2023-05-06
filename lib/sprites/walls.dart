@@ -1,9 +1,8 @@
-import 'package:basket/game/basket_game.dart';
 import 'package:flame/collisions.dart';
 import 'package:flame/components.dart';
 
 class Wall extends SpriteComponent
-    with HasGameRef<BasketBall>, CollisionCallbacks {
+    with CollisionCallbacks {
   final hitBox = RectangleHitbox();
   final double coefficient;
 
@@ -16,17 +15,22 @@ class Wall extends SpriteComponent
     size: size,
     priority: 3,
     angle: radians(angle),
+    anchor: Anchor.center,
   );
 
   @override
   Future<void>? onLoad() async {
     await super.onLoad();
     await add(hitBox);
-    sprite = await gameRef.loadSprite('game/wall.png');
+    sprite = await Sprite.load('game/wall.png');
   }
 
   double getCoefficient() {
     return coefficient;
+  }
+
+  String getName() {
+    return "Wall";
   }
 }
 
@@ -41,7 +45,12 @@ class BrickWall extends Wall {
   @override
   Future<void>? onLoad() async {
     await super.onLoad();
-    sprite = await gameRef.loadSprite('game/brick_wall.png');
+    sprite = await Sprite.load('game/brick_wall.png');
+  }
+
+  @override
+  String getName() {
+    return "Brick Wall";
   }
 }
 
@@ -55,6 +64,11 @@ class WoodWall extends Wall {
   @override
   Future<void>? onLoad() async {
     await super.onLoad();
-    sprite = await gameRef.loadSprite('game/wood_wall.png');
+    sprite = await Sprite.load('game/wood_wall.png');
+  }
+
+  @override
+  String getName() {
+    return "Wood Wall";
   }
 }

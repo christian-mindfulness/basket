@@ -6,7 +6,7 @@ import 'package:flame/components.dart';
 import '../game/basket_game.dart';
 
 class BasketGoal extends SpriteComponent
-    with HasGameRef<BasketBall>, CollisionCallbacks {
+    with CollisionCallbacks {
   late final PolygonHitbox hitBox;
   late final CircleHitbox goalHitBox;
   final double coefficient;
@@ -71,7 +71,7 @@ class BasketGoal extends SpriteComponent
     await super.onLoad();
     await add(hitBox);
     await add(goalHitBox);
-    sprite = await gameRef.loadSprite('game/basket.png');
+    sprite = await Sprite.load('game/basket.png');
   }
 
   double getCoefficient() {

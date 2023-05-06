@@ -11,7 +11,7 @@ import 'package:flame/components.dart';
 // import 'package:flutter/cupertino.dart';
 import 'package:flutter/services.dart';
 
-class Player extends SpriteComponent with HasGameRef<BasketBall>, KeyboardHandler, CollisionCallbacks {
+class Player extends SpriteComponent with HasGameRef, KeyboardHandler, CollisionCallbacks {
   Player()
       : super(
     size: Vector2.all(30.0),
@@ -29,7 +29,7 @@ class Player extends SpriteComponent with HasGameRef<BasketBall>, KeyboardHandle
   @override
   Future<void> onLoad() async {
     super.onLoad();
-    sprite = await gameRef.loadSprite('blue_ball.png');
+    sprite = await Sprite.load('blue_ball.png');
     position = Vector2(200, 750);
     oldPosition = position;
     await add(_hitBox);
@@ -49,7 +49,7 @@ class Player extends SpriteComponent with HasGameRef<BasketBall>, KeyboardHandle
     position += _velocity * dt;
     super.update(dt);
     if (pauseNextTick) {
-      game.pause();
+      (game as BasketBall).pause();
       pauseNextTick = false;
     }
   }
@@ -94,7 +94,7 @@ class Player extends SpriteComponent with HasGameRef<BasketBall>, KeyboardHandle
           other.getCoefficient());
     } else if (other is BasketGoal) {
       if (_hitBox.collidingWith(other.goalHitBox)) {
-        game.victory();
+        (game as BasketBall).victory();
       }
       polygonCollision(
           other, other.hitBox.globalVertices(), other.deadlyVertices,
@@ -183,7 +183,7 @@ class Player extends SpriteComponent with HasGameRef<BasketBall>, KeyboardHandle
       position = location + _velocity.normalized() * (1-colTime) * (position.distanceTo(oldPosition));
     } else {
       print('No collision');
-      gameRef.pauseEngine();
+      (gameRef as BasketBall).pauseEngine();
     }
   }
 
@@ -221,7 +221,7 @@ class Player extends SpriteComponent with HasGameRef<BasketBall>, KeyboardHandle
         tangent = tangent.normalized();
         print('Actual corner');
         if (deadlyVertices[-1+(colIndex+1)~/2]) {
-          game.failed();
+          (game as BasketBall).failed();
         }
       }
       if (pauseNextTick) {
@@ -232,7 +232,6 @@ class Player extends SpriteComponent with HasGameRef<BasketBall>, KeyboardHandle
       _velocity = applyTangent(reflect(_velocity, normal, coefficient), tangent, 0.8);
     } else {
       print('No collision');
-      //gameRef.pauseEngine();
     }
   }
 
