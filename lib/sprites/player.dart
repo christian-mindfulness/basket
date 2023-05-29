@@ -11,6 +11,27 @@ import 'package:flame/components.dart';
 // import 'package:flutter/cupertino.dart';
 import 'package:flutter/services.dart';
 
+enum BallType {
+  basket,
+  metal,
+  tennis,
+  beach,
+}
+
+Map<BallType, String> ballNames = {
+  BallType.basket: "Basket ball",
+  BallType.metal: "Metal ball",
+  BallType.tennis: "Tennis ball",
+  BallType.beach: "Beach ball",
+};
+
+Map<BallType, int> ballSizes = {
+  BallType.basket: 50,
+  BallType.metal: 10,
+  BallType.tennis: 30,
+  BallType.beach: 80,
+};
+
 class Player extends SpriteComponent with HasGameRef, KeyboardHandler, CollisionCallbacks {
   Player()
       : super(

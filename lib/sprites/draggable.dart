@@ -8,6 +8,7 @@ import 'package:basket/sprites/player.dart';
 import 'package:flame/components.dart';
 import 'package:flame/experimental.dart';
 import 'package:flutter/cupertino.dart';
+import '../utils/movement.dart';
 import 'walls.dart';
 
 class DragBrickWall extends BrickWall with DragCallbacks, TapCallbacks {
@@ -19,6 +20,8 @@ class DragBrickWall extends BrickWall with DragCallbacks, TapCallbacks {
   }
 
   late Vector2 _position;
+  Movement movement = Movement(allow: false,
+      position: Vector2(0,0), time: 1, angle: 0);
 
   @override
   void onDragUpdate(DragUpdateEvent event) {
@@ -43,6 +46,8 @@ class DragWoodWall extends WoodWall with DragCallbacks, TapCallbacks {
   }
 
   late Vector2 _position;
+  Movement movement = Movement(allow: false,
+      position: Vector2(0,0), time: 1, angle: 0);
 
   @override
   void onDragUpdate(DragUpdateEvent event) {
@@ -67,6 +72,8 @@ class DragSpike extends Spike with DragCallbacks, TapCallbacks {
   }
 
   late Vector2 _position;
+  Movement movement = Movement(allow: false,
+      position: Vector2(0,0), time: 1, angle: 0);
 
   @override
   void onDragUpdate(DragUpdateEvent event) {
@@ -91,6 +98,8 @@ class DragStar extends Star with DragCallbacks, TapCallbacks {
   }
 
   late Vector2 _position;
+  Movement movement = Movement(allow: false,
+      position: Vector2(0,0), time: 1, angle: 0);
 
   @override
   void onDragUpdate(DragUpdateEvent event) {
@@ -115,6 +124,8 @@ class DragBasket extends BasketGoal with DragCallbacks, TapCallbacks {
   }
 
   late Vector2 _position;
+  Movement movement = Movement(allow: false,
+      position: Vector2(0,0), time: 1, angle: 0);
 
   @override
   void onDragUpdate(DragUpdateEvent event) {
@@ -130,12 +141,42 @@ class DragBasket extends BasketGoal with DragCallbacks, TapCallbacks {
   }
 }
 
-class DragBall extends Player with DragCallbacks, TapCallbacks {
-  DragBall() {
-    _position = position;
-  }
+class DragBall extends SpriteGroupComponent with DragCallbacks, TapCallbacks {
+  DragBall({
+    required super.position,
+    required Vector2 size,
+    required BallType type,
+  }) : super(
+    size: size,
+    priority: 3,
+    anchor: Anchor.center,
+  );
 
   late Vector2 _position;
+
+  @override
+  Future<void> onLoad() async {
+    _position = position;
+    var basket = await Sprite.load('basket_ball.png');
+    var beach = await Sprite.load('beach_ball.png');
+    var metal = await Sprite.load('metal_ball.png');
+    var tennis = await Sprite.load('tennis_ball.png');
+    sprites = <BallType, Sprite>{
+      BallType.metal: metal,
+      BallType.basket: basket,
+      BallType.tennis: tennis,
+      BallType.beach: beach,
+    };
+    current = BallType.beach;
+    size = Vector2(ballSizes[current]!.toDouble(), ballSizes[current]!.toDouble());
+    return super.onLoad();
+  }
+
+  void changeType(BallType newType) {
+    current = newType;
+    size = Vector2(ballSizes[newType]!.toDouble(),
+        ballSizes[newType]!.toDouble());
+  }
 
   @override
   void onDragUpdate(DragUpdateEvent event) {

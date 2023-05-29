@@ -2,8 +2,12 @@ import 'dart:math';
 import 'dart:ui';
 
 import 'package:basket/game/world_editor.dart';
+import 'package:basket/sprites/player.dart';
 import 'package:flame/game.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+
+import '../utils/movement.dart';
 
 class ResizeOverlay extends StatelessWidget {
   const ResizeOverlay(this.game, {super.key});
@@ -30,16 +34,24 @@ class _NewOverlayState extends State<NewOverlay> {
   late double sizeX;
   late double sizeY;
   late double angle;
+  late BallType ballType;
+  late Movement movement;
   late final Vector2 initialSize;
   late final double initialAngle;
+  late final BallType initialBallType;
+  late final Movement initialMovement;
 
   @override
   void initState() {
     initialSize = (widget.game as WorldEditorGame).getSize().clone();
     initialAngle = (widget.game as WorldEditorGame).getAngle();
+    initialBallType = (widget.game as WorldEditorGame).getBallType();
+    initialMovement = (widget.game as WorldEditorGame).getMovement();
     sizeX = initialSize.x;
     sizeY = initialSize.y;
     angle = initialAngle;
+    ballType = initialBallType;
+    movement = initialMovement;
     super.initState();
   }
 
@@ -48,7 +60,6 @@ class _NewOverlayState extends State<NewOverlay> {
     return
       InkWell(
         onTap: () {
-          print('Outer tap');
           (widget.game as WorldEditorGame).hideResize();
           },
         child: BackdropFilter(
@@ -62,7 +73,7 @@ class _NewOverlayState extends State<NewOverlay> {
             child: Center(
                 child: Container(
                   width: 300,
-                  height: 300,
+                  height: 500,
                   decoration: BoxDecoration(
                     color: Colors.white,
                     borderRadius: const BorderRadius.all(Radius.circular(10)),
@@ -105,10 +116,10 @@ class _NewOverlayState extends State<NewOverlay> {
           result.add(getDeleteButton());
           break;
         case Operations.ballType:
-        // TODO: Handle this case.
+          result.add(getBallTypeWidget());
           break;
-        case Operations.wallType:
-        // TODO: Handle this case.
+        case Operations.movement:
+          result += getMovementWidget();
           break;
       }
     }
@@ -129,6 +140,8 @@ class _NewOverlayState extends State<NewOverlay> {
               print('Reset size $initialSize');
               (widget.game as WorldEditorGame).setSize(initialSize);
               (widget.game as WorldEditorGame).setAngle(initialAngle);
+              (widget.game as WorldEditorGame).setBallType(initialBallType);
+              (widget.game as WorldEditorGame).setMovement(initialMovement);
               (widget.game as WorldEditorGame).hideResize();
             },
             child: const Text('Cancel', style: TextStyle(color: Colors.blue),),
@@ -142,7 +155,7 @@ class _NewOverlayState extends State<NewOverlay> {
   List<Widget> getRotationWidget() {
     return [
       Text('Angle ${angle.toInt()}',
-      style: const TextStyle(color: Colors.blue),),
+        style: const TextStyle(color: Colors.blue),),
       Slider(
           value: angle,
           max: 360,
@@ -154,6 +167,108 @@ class _NewOverlayState extends State<NewOverlay> {
             });
           }),
     ];
+  }
+
+  List<Widget> getMovementWidget() {
+    return [
+      CheckboxListTile(
+        value: movement.allow,
+        secondary: const Text('Allow movement'),
+        onChanged: (bool? value){
+          debugPrint(value.toString());
+          setState(() {
+            movement.allow = value!;
+            (widget.game as WorldEditorGame).setMovement(movement);
+          });
+        },),
+      movement.allow ? Text('Start position: ${(widget.game as WorldEditorGame).currentComp.position.x.toInt()}, ${(widget.game as WorldEditorGame).currentComp.position.y.toInt()}') :
+        const SizedBox.shrink(),
+      movement.allow ? Row(children: [
+        const Text('End position: '),
+        SizedBox(
+          width: 50,
+          child: TextFormField(
+            initialValue: movement.position.x.toInt().toString(),
+            keyboardType: TextInputType.number,
+            inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+            onChanged: (String? value){
+              setState(() {
+                movement.position.x = int.parse(value!).toDouble();
+                (widget.game as WorldEditorGame).setMovement(movement);
+              });
+            },),),
+        const Text(' ,'),
+        SizedBox(
+          width: 50,
+          child: TextFormField(
+            initialValue: movement.position.y.toInt().toString(),
+            keyboardType: TextInputType.number,
+            inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+            onChanged: (String? value){
+              setState(() {
+                movement.position.y = int.parse(value!).toDouble();
+                (widget.game as WorldEditorGame).setMovement(movement);
+              });
+            },),),
+        ],)
+        : const SizedBox.shrink(),
+      movement.allow ? Row(children: [
+        Text('Start angle: ${angle.toInt()}  End angle: '),
+        SizedBox(
+          width: 50,
+          child: TextFormField(
+            initialValue: movement.angle.toInt().toString(),
+            keyboardType: TextInputType.number,
+            inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+            onChanged: (String? value){
+              setState(() {
+                movement.angle = double.parse(value!);
+                (widget.game as WorldEditorGame).setMovement(movement);
+              });
+            },),),
+      ],) :
+      const SizedBox.shrink(),
+      movement.allow ? Row(children: [
+        const Text('Time taken: '),
+        SizedBox(
+          width: 50,
+          child: TextFormField(
+            initialValue: movement.time.toString(),
+            keyboardType: TextInputType.number,
+            inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r"[\d.]"))],
+            onChanged: (String? value){
+              setState(() {
+                movement.time = double.parse(value!);
+                (widget.game as WorldEditorGame).setMovement(movement);
+              });
+            },),),
+      ],) :
+      const SizedBox.shrink(),
+    ];
+  }
+
+  Widget getBallTypeWidget() {
+    return Row(
+      children: [
+        const Padding(padding: EdgeInsets.all(10),
+          child: Text('Ball type:',
+          style: TextStyle(color: Colors.blue),),),
+        DropdownButton(
+            value: ballType,
+            items: [
+          DropdownMenuItem(value: BallType.basket, child: Text(ballNames[BallType.basket]!),),
+          DropdownMenuItem(value: BallType.tennis, child: Text(ballNames[BallType.tennis]!),),
+          DropdownMenuItem(value: BallType.metal, child: Text(ballNames[BallType.metal]!),),
+          DropdownMenuItem(value: BallType.beach, child: Text(ballNames[BallType.beach]!),),
+        ], onChanged: (BallType? type){
+          print('Chosen $type');
+          (widget.game as WorldEditorGame).setBallType(type!);
+          setState(() {
+            ballType = type;
+          });
+        }),
+      ],
+    );
   }
 
   List<Widget> getResizeWidget() {

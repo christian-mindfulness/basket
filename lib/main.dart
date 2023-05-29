@@ -1,6 +1,8 @@
 import 'package:basket/game/world_editor.dart';
 import 'package:basket/overlays/editor_overlay.dart';
+import 'package:basket/sprites/draggable.dart';
 import 'package:basket/widgets/resize_dialog.dart';
+import 'package:flame/components.dart';
 import 'package:flame/game.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -22,6 +24,7 @@ class MyApp extends StatelessWidget {
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
+    SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
     return MaterialApp(
       title: 'Basketball',
       theme: ThemeData(
@@ -37,6 +40,7 @@ class MyApp extends StatelessWidget {
         primarySwatch: Colors.blue,
       ),
       home: const MyHomePage(title: 'Basket'),
+      debugShowCheckedModeBanner: false,
     );
   }
 }
@@ -79,44 +83,68 @@ class _MyHomePageState extends State<MyHomePage> {
           ),
         ),
       floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          debugPrint('Hello');
-        },
-        tooltip: 'Increment',
-        child: const Icon(Icons.add),
+        onPressed: () {},
+        child: _offsetPopup(),
+
       ), // This trailing comma makes auto-formatting nicer for build methods.
     );
   }
 
+  List<PopupMenuItem<int>> extraItems = [
+    PopupMenuItem(
+      child: const Text(
+        "Change gravity",
+        style: TextStyle(
+            color: Colors.black, fontWeight: FontWeight.w700),
+      ),
+      onTap: (){
+        debugPrint('Change gravity');
+        (game as WorldEditorGame).showGravityDialogue();
+      },
+    ),
+    PopupMenuItem(
+      child: const Text(
+        "Load level",
+        style: TextStyle(
+            color: Colors.black, fontWeight: FontWeight.w700),
+      ),
+      onTap: (){
+        debugPrint('Load level');
+        (game as WorldEditorGame).loadLevel();
+      },
+    ),
+    PopupMenuItem(
+      child: const Text(
+        "Save level",
+        style: TextStyle(
+            color: Colors.black, fontWeight: FontWeight.w700),
+      ),
+      onTap: (){
+        debugPrint('Save level');
+        (game as WorldEditorGame).saveLevel();
+      },
+    ),
+  ];
+
   Widget _offsetPopup() => PopupMenuButton<int>(
-      itemBuilder: (context) => [
-        const PopupMenuItem(
-          value: 1,
-          child: Text(
-            "Flutter Open",
-            style: TextStyle(
-                color: Colors.black, fontWeight: FontWeight.w700),
-          ),
-        ),
-        const PopupMenuItem(
-          value: 2,
-          child: Text(
-            "Flutter Tutorial",
-            style: TextStyle(
-                color: Colors.black, fontWeight: FontWeight.w700),
-          ),
-        ),
-      ],
-      icon: Container(
-        height: double.infinity,
-        width: double.infinity,
-        decoration: const ShapeDecoration(
-            color: Colors.blue,
-            shape: StadiumBorder(
-              side: BorderSide(color: Colors.white, width: 2),
-            )
-        ),
-        //child: Icon(Icons.menu, color: Colors.white), <-- You can give your icon here
+      itemBuilder: (context) =>
+          Components.values.map((e) =>
+              PopupMenuItem<int>(
+                child: Text(
+                  "Add ${(game as WorldEditorGame).getElementName(e)}",
+                  style: const TextStyle(
+                      color: Colors.black, fontWeight: FontWeight.w700),
+                ),
+                onTap: (){
+                  debugPrint('Add ${(game as WorldEditorGame).getElementName(e)}');
+                  (game as WorldEditorGame).addComponent(e);
+                },
+              ),
+          ).toList() + extraItems,
+      icon: const Icon(
+        Icons.add,
+        size: 25,
+        color: Colors.white,
       )
   );
 }
