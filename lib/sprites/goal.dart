@@ -1,11 +1,12 @@
 import 'dart:math';
 
+import 'package:basket/sprites/basket_sprites.dart';
 import 'package:flame/collisions.dart';
 import 'package:flame/components.dart';
 
 import '../game/basket_game.dart';
 
-class BasketGoal extends SpriteComponent
+class BasketGoal extends BasketSprite
     with CollisionCallbacks {
   late final PolygonHitbox hitBox;
   late final CircleHitbox goalHitBox;
@@ -21,7 +22,6 @@ class BasketGoal extends SpriteComponent
     size: size,
     priority: 2,
     angle: radians(angle),
-    anchor: Anchor.bottomLeft,
   ) {
     goalHitBox = CircleHitbox(radius: min(size.x, size.y) / 4, position: Vector2(size.x / 2, size.y * 0.7), anchor: Anchor.center);
     hitBox = PolygonHitbox([
@@ -71,10 +71,31 @@ class BasketGoal extends SpriteComponent
     await super.onLoad();
     await add(hitBox);
     await add(goalHitBox);
-    sprite = await Sprite.load('game/basket.png');
+    var basket = await Sprite.load('game/basket.png');
+    sprites = <int, Sprite>{0: basket};
+    current = 0;
   }
 
   double getCoefficient() {
     return coefficient;
+  }
+
+  BasketGoal.fromJson(Map<String, dynamic> json) : coefficient = 0.7,
+        super(position: Vector2(json['position.x'], json['position.y']),
+          size: Vector2(json['size.x'], json['size.y']),
+          angle: json['angle']);
+
+  @override
+  Map<String, dynamic> toJson() => {
+    'position.x': position.x,
+    'position.y': position.y,
+    'size.x': size.x,
+    'size.y': size.y,
+    'angle': angle,
+  };
+
+  @override
+  String getName() {
+    return 'Goal';
   }
 }

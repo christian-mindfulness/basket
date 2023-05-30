@@ -10,7 +10,8 @@ import 'package:flutter/services.dart';
 import 'game/basket_game.dart';
 import 'overlays/failed_overlay.dart';
 import 'overlays/game_overlay.dart';
-import 'overlays/main_menu.dart';
+import 'screens/main_menu.dart';
+import 'overlays/save_overlay.dart';
 import 'overlays/tutorial_overlay.dart';
 import 'overlays/victory_overlay.dart';
 
@@ -77,6 +78,7 @@ class _MyHomePageState extends State<MyHomePage> {
                   'tutorialOverlay': (context, game) => TutorialOverlay(game),
                   'editorOverlay': (context, game) => EditorOverlay(game),
                   'resizeOverlay': (context, game) => NewOverlay(game),
+                  'saveOverlay': (context, game) => SaveOverlay(game),
               },
             );
           }
@@ -121,7 +123,7 @@ class _MyHomePageState extends State<MyHomePage> {
       ),
       onTap: (){
         debugPrint('Save level');
-        (game as WorldEditorGame).saveLevel();
+        (game as WorldEditorGame).startSaveRequest();
       },
     ),
   ];

@@ -1,8 +1,9 @@
 import 'package:basket/game/basket_game.dart';
+import 'package:basket/sprites/basket_sprites.dart';
 import 'package:flame/collisions.dart';
 import 'package:flame/components.dart';
 
-class Spike extends SpriteComponent
+class Spike extends BasketSprite
     with CollisionCallbacks {
   late final PolygonHitbox hitBox;
   final double coefficient;
@@ -17,14 +18,8 @@ class Spike extends SpriteComponent
     size: size,
     priority: 3,
     angle: radians(angle),
-    anchor: Anchor.center,
   ) {
     hitBox = PolygonHitbox.relative([Vector2(-0.5, 0.5),Vector2(0, -0.5),Vector2(0.5, 0.5),], parentSize: size);
-    // hitBox = PolygonHitbox([
-    //   Vector2(-0.5 * size.x, 0.5 * size.y),
-    //   Vector2(0, -0.5 * size.y),
-    //   Vector2(0.5 * size.x, 0.5 * size.y),
-    // ]);
     deadlyVertices = [false, true, false];
   }
 
@@ -47,21 +42,22 @@ class Spike extends SpriteComponent
   Future<void>? onLoad() async {
     await super.onLoad();
     await add(hitBox);
-    sprite = await Sprite.load('game/spike.png');
+    var spike = await Sprite.load('game/spike.png');
+    sprites = <int, Sprite>{0: spike};
+    current = 0;
   }
 
-  // @override
-  // void onGameResize(Vector2 size) {
-  //   getHitBox();
-  //   super.onGameResize(size);
-  // }
-  //
   double getCoefficient() {
     return coefficient;
   }
+
+  @override
+  String getName() {
+    return "Spike";
+  }
 }
 
-class Star extends SpriteComponent {
+class Star extends BasketSprite {
   late PolygonHitbox hitBox;
   final double coefficient;
   late final List<bool> deadlyVertices;
@@ -75,7 +71,6 @@ class Star extends SpriteComponent {
     size: size,
     priority: 3,
     angle: radians(angle),
-    anchor: Anchor.center,
   ) {
     hitBox = PolygonHitbox([
       Vector2(0.0 * size.x, 0.5 * size.y),
@@ -148,7 +143,9 @@ class Star extends SpriteComponent {
     print('onLoad');
     await super.onLoad();
     addHitBox();
-    sprite = await Sprite.load('game/star.png');
+    var star = await Sprite.load('game/star.png');
+    sprites = <int, Sprite>{0: star};
+    current = 0;
   }
 
   void addHitBox() async {
@@ -170,5 +167,10 @@ class Star extends SpriteComponent {
 
   double getCoefficient() {
     return coefficient;
+  }
+
+  @override
+  String getName() {
+    return "Star";
   }
 }

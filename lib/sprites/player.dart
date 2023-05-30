@@ -89,6 +89,22 @@ class Player extends SpriteComponent with HasGameRef, KeyboardHandler, Collision
     return true;
   }
 
+  Player.fromJson(Map<String, dynamic> json) {
+    position.x = json['position.x'];
+    position.y = json['position.y'];
+    size.x = json['size.x'];
+    size.y = json['size.y'];
+    angle = json['angle'];
+  }
+
+  Map<String, dynamic> toJson() => {
+    'position.x': position.x,
+    'position.y': position.y,
+    'size.x': size.x,
+    'size.y': size.y,
+    'angle': angle,
+  };
+
   @override
   void onCollision(Set<Vector2> intersectionPoints, PositionComponent other) {
     super.onCollision(intersectionPoints, other);

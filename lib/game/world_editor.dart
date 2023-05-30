@@ -1,7 +1,11 @@
+import 'dart:convert';
 import 'dart:math';
 
+import 'package:basket/sprites/basket_sprites.dart';
 import 'package:basket/sprites/draggable.dart';
 import 'package:basket/sprites/player.dart';
+import 'package:basket/utils/component_list.dart';
+import 'package:basket/utils/files.dart';
 import 'package:flame/components.dart';
 import 'package:flame/experimental.dart';
 import 'package:flame/game.dart';
@@ -26,20 +30,20 @@ enum Operations {
 }
 
 class WorldEditorGame extends FlameGame with HasDraggableComponents, HasTappableComponents {
-  late PositionComponent currentComp;
+  late BasketSprite currentComp;
   final MyWorld _world = MyWorld();
   late final CameraComponent cameraComponent;
   late final World world;
   Vector2 worldSize = Vector2(400, 800);
 
-  List<Component> componentList = [
+  ComponentList componentList = ComponentList([
     DragWoodWall(size: Vector2(400, 10), position: Vector2(200, 5)),
     DragWoodWall(size: Vector2(400, 15), position: Vector2(200, 795)),
     DragBrickWall(size: Vector2(10, 800), position: Vector2(5, 400)),
     DragBrickWall(size: Vector2(10, 800), position: Vector2(395, 400)),
     DragBasket(size: Vector2(50, 50), position: Vector2(300, 100)),
     DragBall(position: Vector2(200, 650), size: Vector2(30, 30), type: BallType.basket),
-  ];
+  ]);
 
   @override
   Future<void> onLoad() async {
@@ -51,13 +55,13 @@ class WorldEditorGame extends FlameGame with HasDraggableComponents, HasTappable
     );
     cameraComponent.viewfinder.anchor = Anchor.topLeft;
     addAll([world, cameraComponent]);
-    currentComp = PositionComponent();
-    world.addAll(componentList);
+    currentComp = BasketSprite(position: Vector2(0,0), size: Vector2(0,0));
+    world.addAll(componentList.getList());
     world.add(_world);
     //overlays.add('editorOverlay');
   }
 
-  PositionComponent getComponent(Components component) {
+  BasketSprite getComponent(Components component) {
     switch (component) {
       case Components.brickWall:
         {
@@ -80,7 +84,7 @@ class WorldEditorGame extends FlameGame with HasDraggableComponents, HasTappable
 
   void addComponent(Components component) {
     componentList.add(getComponent(component));
-    world.add(componentList.last);
+    world.add(componentList.last());
   }
 
   double getAngle() {
@@ -107,7 +111,7 @@ class WorldEditorGame extends FlameGame with HasDraggableComponents, HasTappable
     currentComp.size = size;
   }
 
-  void showResize(PositionComponent object) {
+  void showResize(BasketSprite object) {
     overlays.remove('resizeOverlay');
     print('${object.size}');
     currentComp = object;
@@ -118,12 +122,25 @@ class WorldEditorGame extends FlameGame with HasDraggableComponents, HasTappable
     print('Do nothing');
   }
 
-  void loadLevel() {
-    print('Do nothing');
+  void loadLevel() async {
+    final file = await localFile('temp');
+    String result = await file.readAsString();
+    debugPrint(result, wrapWidth: 100);
   }
 
-  void saveLevel() {
-    print('Do nothing');
+  void startSaveRequest() async {
+    overlays.add('saveOverlay');
+  }
+
+  void saveFile(String fName) async {
+    overlays.remove('saveOverlay');
+    String levelLayout = jsonEncode(componentList);
+    final file = await localFile(fName);
+    file.writeAsString(levelLayout);
+  }
+
+  void hideSaveOverlay() {
+    overlays.remove('saveOverlay');
   }
 
   void hideResize() {
@@ -206,21 +223,7 @@ class WorldEditorGame extends FlameGame with HasDraggableComponents, HasTappable
     return getCompName(component);
   }
 
-  String getCompName(PositionComponent component) {
-    if (component is DragBrickWall) {
-      return "Brick wall";
-    } else if (component is DragWoodWall) {
-      return "Wooden wall";
-    } else if (component is DragSpike) {
-      return "Spike";
-    } else if (component is DragStar) {
-      return "Star";
-    } else if (component is DragBall) {
-      return "Ball";
-    } else if (component is DragBasket) {
-      return "Basket";
-    } else {
-      return "Unknown";
-    }
+  String getCompName(BasketSprite component) {
+    return component.getName();
   }
 }

@@ -5,6 +5,7 @@ import 'package:basket/main.dart';
 import 'package:basket/sprites/enemies.dart';
 import 'package:basket/sprites/goal.dart';
 import 'package:basket/sprites/player.dart';
+import 'package:basket/sprites/basket_sprites.dart';
 import 'package:flame/components.dart';
 import 'package:flame/experimental.dart';
 import 'package:flutter/cupertino.dart';
@@ -141,7 +142,7 @@ class DragBasket extends BasketGoal with DragCallbacks, TapCallbacks {
   }
 }
 
-class DragBall extends SpriteGroupComponent with DragCallbacks, TapCallbacks {
+class DragBall extends BasketSprite with DragCallbacks, TapCallbacks {
   DragBall({
     required super.position,
     required Vector2 size,
@@ -149,7 +150,6 @@ class DragBall extends SpriteGroupComponent with DragCallbacks, TapCallbacks {
   }) : super(
     size: size,
     priority: 3,
-    anchor: Anchor.center,
   );
 
   late Vector2 _position;
@@ -189,6 +189,26 @@ class DragBall extends SpriteGroupComponent with DragCallbacks, TapCallbacks {
   void onTapUp(TapUpEvent event) {
     super.onTapUp(event);
     (game as WorldEditorGame).showResize(this);
+  }
+
+  DragBall.fromJson(Map<String, dynamic> json)
+      : super(position: Vector2(json['position.x'], json['position.y']),
+              size: Vector2(json['size.x'], json['size.y']),
+              angle: json['angle']);
+
+  @override
+  Map<String, dynamic> toJson() => {
+    'ball_type': ballNames[current],
+    'position.x': position.x,
+    'position.y': position.y,
+    'size.x': size.x,
+    'size.y': size.y,
+    'angle': angle,
+  };
+
+  @override
+  String getName() {
+    return 'Ball';
   }
 }
 
