@@ -21,12 +21,16 @@ class FailedOverlay extends StatelessWidget {
         const Text('Bang!',
           style: TextStyle(fontSize: 24,
               color: Colors.black),),
-        MyElevatedButton(onPressed: (){
-          (game as BasketBall).replayLevel();
-        }, game: game, text: 'Replay level'),
-        MyElevatedButton(onPressed: (){
-          (game as BasketBall).mainMenu();
-        }, game: game, text: 'Main menu'),
+        MyElevatedButton(
+            onPressed: (){
+              (game as BasketBall).replayLevel();
+              },
+            text: 'Replay level'),
+        MyElevatedButton(
+            onPressed: (){
+              (game as BasketBall).mainMenu();
+              },
+            text: 'Main menu'),
       ],
     ),),);
   }

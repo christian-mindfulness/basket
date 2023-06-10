@@ -20,15 +20,21 @@ class MainMenu extends StatelessWidget {
         const Text('Basket',
         style: TextStyle(fontSize: 24,
         color: Colors.black),),
-        MyElevatedButton(onPressed: (){
-          (game as BasketBall).setLevel(1, type: 'T');
-        }, game: game, text: 'Tutorial'),
-        MyElevatedButton(onPressed: (){
-          (game as BasketBall).setLevel(1);
-        }, game: game, text: 'Level 1'),
-        MyElevatedButton(onPressed: (){
-          (game as BasketBall).setLevel(2);
-        }, game: game, text: 'Level 2'),
+        MyElevatedButton(
+            onPressed: (){
+              (game as BasketBall).setLevel(1, type: 'T');
+              },
+            text: 'Tutorial'),
+        MyElevatedButton(
+            onPressed: (){
+              (game as BasketBall).setLevel(1);
+              },
+            text: 'Level 1'),
+        MyElevatedButton(
+            onPressed: (){
+              (game as BasketBall).setLevel(2);
+              },
+            text: 'Level 2'),
       ],
     ),),);
   }

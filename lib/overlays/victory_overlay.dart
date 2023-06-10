@@ -22,15 +22,21 @@ class VictoryOverlay extends StatelessWidget {
         const Text('Congratulations',
           style: TextStyle(fontSize: 24,
               color: Colors.black),),
-        MyElevatedButton(onPressed: (){
-          (game as BasketBall).replayLevel();
-        }, game: game, text: 'Replay level'),
-        MyElevatedButton(onPressed: (){
-          (game as BasketBall).nextLevel();
-        }, game: game, text: 'Next level'),
-        MyElevatedButton(onPressed: (){
-          (game as BasketBall).mainMenu();
-        }, game: game, text: 'Main menu'),
+        MyElevatedButton(
+            onPressed: (){
+              (game as BasketBall).replayLevel();
+              },
+            text: 'Replay level'),
+        MyElevatedButton(
+            onPressed: (){
+              (game as BasketBall).nextLevel();
+              },
+            text: 'Next level'),
+        MyElevatedButton(
+            onPressed: (){
+              (game as BasketBall).mainMenu();
+              },
+            text: 'Main menu'),
       ],
     ),),);
   }

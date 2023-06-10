@@ -9,6 +9,10 @@ class ComponentList {
     _list.add(comp);
   }
 
+  void addAll(List<BasketSprite> compList) {
+    _list += compList;
+  }
+
   void remove(BasketSprite comp) {
     _list.remove(comp);
   }

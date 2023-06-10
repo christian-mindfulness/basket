@@ -41,9 +41,11 @@ class TutorialOverlay extends StatelessWidget {
           const Text('Flick the screen to give a nudge to the ball',
             style: TextStyle(fontSize: 24,
                 color: Colors.black54),),
-          MyElevatedButton(onPressed: (){
-            (game as BasketBall).clearTutorialOverlay();
-          }, game: game, text: 'OK'),
+          MyElevatedButton(
+              onPressed: (){
+                (game as BasketBall).clearTutorialOverlay();
+                },
+              text: 'OK'),
         ];
       }
 
@@ -65,9 +67,11 @@ class TutorialOverlay extends StatelessWidget {
             style: TextStyle(fontSize: 24,
                 color: Colors.black54),),
           const SizedBox(height: 30,),
-          MyElevatedButton(onPressed: (){
-            (game as BasketBall).clearTutorialOverlay();
-          }, game: game, text: 'OK'),
+          MyElevatedButton(
+              onPressed: (){
+                (game as BasketBall).clearTutorialOverlay();
+                },
+              text: 'OK'),
         ];
       }
 
@@ -84,9 +88,11 @@ class TutorialOverlay extends StatelessWidget {
           const Text("Here's a tough one",
             style: TextStyle(fontSize: 24,
                 color: Colors.black54),),
-          MyElevatedButton(onPressed: (){
-            (game as BasketBall).clearTutorialOverlay();
-          }, game: game, text: 'OK'),
+          MyElevatedButton(
+              onPressed: (){
+                (game as BasketBall).clearTutorialOverlay();
+                },
+              text: 'OK'),
         ];
       }
 
@@ -103,9 +109,11 @@ class TutorialOverlay extends StatelessWidget {
           const Text("You don't want your ball to pop!",
             style: TextStyle(fontSize: 24,
                 color: Colors.black54),),
-          MyElevatedButton(onPressed: (){
-            (game as BasketBall).clearTutorialOverlay();
-          }, game: game, text: 'OK'),
+          MyElevatedButton(
+              onPressed: (){
+                (game as BasketBall).clearTutorialOverlay();
+                },
+              text: 'OK'),
         ];
       }
 
@@ -119,9 +127,11 @@ class TutorialOverlay extends StatelessWidget {
             style: TextStyle(fontSize: 24,
                 color: Colors.black54),),
           const SizedBox(height: 30,),
-          MyElevatedButton(onPressed: (){
-            (game as BasketBall).mainMenu();
-          }, game: game, text: 'Main menu'),
+          MyElevatedButton(
+              onPressed: (){
+                (game as BasketBall).mainMenu();
+                },
+              text: 'Main menu'),
         ];
       }
     }

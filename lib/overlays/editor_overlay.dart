@@ -15,18 +15,26 @@ class EditorOverlay extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.start,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            MyElevatedButton(onPressed: (){
-              (game as WorldEditorGame).addComponent(Components.brickWall);
-            }, game: game, text: 'Add Brick'),
-            MyElevatedButton(onPressed: (){
-              (game as WorldEditorGame).addComponent(Components.woodWall);
-            }, game: game, text: 'Add Wood'),
-            MyElevatedButton(onPressed: (){
-              (game as WorldEditorGame).addComponent(Components.spike);
-            }, game: game, text: 'Add Spike'),
-            MyElevatedButton(onPressed: (){
-              (game as WorldEditorGame).addComponent(Components.star);
-            }, game: game, text: 'Add Star'),
+            MyElevatedButton(
+                onPressed: (){
+                  (game as WorldEditorGame).addComponent(Components.brickWall);
+                  },
+                text: 'Add Brick'),
+            MyElevatedButton(
+                onPressed: (){
+                  (game as WorldEditorGame).addComponent(Components.woodWall);
+                  },
+                text: 'Add Wood'),
+            MyElevatedButton(
+                onPressed: (){
+                  (game as WorldEditorGame).addComponent(Components.spike);
+                  },
+                text: 'Add Spike'),
+            MyElevatedButton(
+                onPressed: (){
+                  (game as WorldEditorGame).addComponent(Components.star);
+                  },
+                text: 'Add Star'),
           ],
     );
   }

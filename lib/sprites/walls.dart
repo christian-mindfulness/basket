@@ -47,7 +47,7 @@ class Wall extends BasketSprite
     'position.y': position.y,
     'size.x': size.x,
     'size.y': size.y,
-    'angle': angle,
+    'angle': degrees(angle),
   };
 }
 
@@ -66,6 +66,8 @@ class BrickWall extends Wall {
     sprites = <int, Sprite>{0: wall};
     current = 0;
   }
+
+  BrickWall.fromJson(Map<String, dynamic> json) : super.fromJson(json);
 
   @override
   String getName() {
@@ -87,6 +89,8 @@ class WoodWall extends Wall {
     sprites = <int, Sprite>{0: wall};
     current = 0;
   }
+
+  WoodWall.fromJson(Map<String, dynamic> json) : super.fromJson(json);
 
   @override
   String getName() {

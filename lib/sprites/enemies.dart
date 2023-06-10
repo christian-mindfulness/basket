@@ -55,12 +55,45 @@ class Spike extends BasketSprite
   String getName() {
     return "Spike";
   }
+
+  Spike.fromJson(Map<String, dynamic> json) : coefficient = 0.7,
+        super(position: Vector2(json['position.x'], json['position.y']),
+          size: Vector2(json['size.x'], json['size.y']),
+          angle: json['angle']) {
+    hitBox = PolygonHitbox.relative([Vector2(-0.5, 0.5),Vector2(0, -0.5),Vector2(0.5, 0.5),], parentSize: size);
+    deadlyVertices = [false, true, false];
+  }
+
+  @override
+  Map<String, dynamic> toJson() => {
+    'position.x': position.x,
+    'position.y': position.y,
+    'size.x': size.x,
+    'size.y': size.y,
+    'angle': degrees(angle),
+  };
 }
 
 class Star extends BasketSprite {
   late PolygonHitbox hitBox;
   final double coefficient;
   late final List<bool> deadlyVertices;
+  final List<Vector2> hitBoxShape = [
+    Vector2(0.0, 0.5),
+    Vector2(-0.22252093395631434, -0.5),
+    Vector2(0.40096886790241915, 0.3019377358048382),
+    Vector2(-0.5, -0.14310413210779066),
+    Vector2(0.5, -0.14310413210779055),
+    Vector2(-0.4009688679024192, 0.3019377358048382),
+    Vector2(0.22252093395631445, -0.5),
+    Vector2(0.0, 0.5),
+    Vector2(-0.22252093395631434, -0.5),
+    Vector2(0.40096886790241915, 0.3019377358048382),
+    Vector2(-0.5, -0.14310413210779066),
+    Vector2(0.5, -0.14310413210779055),
+    Vector2(-0.4009688679024192, 0.3019377358048382),
+    Vector2(0.22252093395631445, -0.5)
+  ];
 
   Star({
     super.position,
@@ -72,52 +105,7 @@ class Star extends BasketSprite {
     priority: 3,
     angle: radians(angle),
   ) {
-    hitBox = PolygonHitbox([
-      Vector2(0.0 * size.x, 0.5 * size.y),
-      Vector2(-0.22252093395631434 * size.x, -0.5 * size.y),
-      Vector2(0.40096886790241915 * size.x, 0.3019377358048382 * size.y),
-      Vector2(-0.5 * size.x, -0.14310413210779066 * size.y),
-      Vector2(0.5 * size.x, -0.14310413210779055 * size.y),
-      Vector2(-0.4009688679024192 * size.x, 0.3019377358048382 * size.y),
-      Vector2(0.22252093395631445 * size.x, -0.5 * size.y),
-      Vector2(0.0 * size.x, 0.5 * size.y),
-      Vector2(-0.22252093395631434 * size.x, -0.5 * size.y),
-      Vector2(0.40096886790241915 * size.x, 0.3019377358048382 * size.y),
-      Vector2(-0.5 * size.x, -0.14310413210779066 * size.y),
-      Vector2(0.5 * size.x, -0.14310413210779055 * size.y),
-      Vector2(-0.4009688679024192 * size.x, 0.3019377358048382 * size.y),
-      Vector2(0.22252093395631445 * size.x, -0.5 * size.y),
-      //
-      // Vector2(0.5 * size.x, 0.0 * size.y),
-      // Vector2(0.5794168018485238 * size.x, 0.3568958678922094 * size.y),
-      // Vector2(0.9009688679024191 * size.x, 0.1980622641951616 * size.y),
-      // Vector2(0.6784479339461047 * size.x, 0.4842705284107428 * size.y),
-      // Vector2(1.0 * size.x, 0.6431041321077905 * size.y),
-      // Vector2(0.6431041321077907 * size.x, 0.6431041321077906 * size.y),
-      // Vector2(0.7225209339563144 * size.x, 0.9999999999999999 * size.y),
-      // Vector2(0.5 * size.x, 0.7137917357844188 * size.y),
-      // Vector2(0.27747906604368566 * size.x, 1.0 * size.y),
-      // Vector2(0.3568958678922095 * size.x, 0.6431041321077906 * size.y),
-      // Vector2(0.0 * size.x, 0.6431041321077906 * size.y),
-      // Vector2(0.32155206605389525 * size.x, 0.4842705284107428 * size.y),
-      // Vector2(0.09903113209758083 * size.x, 0.19806226419516182 * size.y),
-      // Vector2(0.42058319815147616 * size.x, 0.3568958678922095 * size.y),
-      //
-      // Vector2(0.5 * size.x, 0.0 * size.y),
-      // Vector2(0.5794168018485238 * size.x, 0.6431041321077906 * size.y),
-      // Vector2(0.9009688679024191 * size.x, 0.8019377358048384 * size.y),
-      // Vector2(0.6784479339461047 * size.x, 0.5157294715892572 * size.y),
-      // Vector2(1.0 * size.x, 0.3568958678922095 * size.y),
-      // Vector2(0.6431041321077907 * size.x, 0.35689586789220945 * size.y),
-      // Vector2(0.7225209339563144 * size.x, 0.0 * size.y),
-      // Vector2(0.5 * size.x, 0.28620826421558115 * size.y),
-      // Vector2(0.27747906604368566 * size.x, 0.0 * size.y),
-      // Vector2(0.3568958678922095 * size.x, 0.35689586789220945 * size.y),
-      // Vector2(0.0 * size.x, 0.3568958678922094 * size.y),
-      // Vector2(0.32155206605389525 * size.x, 0.5157294715892572 * size.y),
-      // Vector2(0.09903113209758083 * size.x, 0.8019377358048382 * size.y),
-      // Vector2(0.42058319815147616 * size.x, 0.6431041321077905 * size.y),
-    ]);
+    hitBox = PolygonHitbox(hitBoxShape.map((e) => Vector2(e.x*size.x, e.y*size.y)).toList());
     deadlyVertices = List.filled(14, true);
   }
 
@@ -173,4 +161,21 @@ class Star extends BasketSprite {
   String getName() {
     return "Star";
   }
+
+  Star.fromJson(Map<String, dynamic> json) : coefficient = 0.7,
+        super(position: Vector2(json['position.x'], json['position.y']),
+          size: Vector2(json['size.x'], json['size.y']),
+          angle: json['angle']) {
+    hitBox = PolygonHitbox(hitBoxShape.map((e) => Vector2(e.x*size.x, e.y*size.y)).toList());
+    deadlyVertices = List.filled(14, true);
+  }
+
+  @override
+  Map<String, dynamic> toJson() => {
+    'position.x': position.x,
+    'position.y': position.y,
+    'size.x': size.x,
+    'size.y': size.y,
+    'angle': degrees(angle),
+  };
 }

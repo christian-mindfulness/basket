@@ -1,7 +1,6 @@
 import 'dart:math';
 
 import 'package:basket/game/world_editor.dart';
-import 'package:basket/main.dart';
 import 'package:basket/sprites/enemies.dart';
 import 'package:basket/sprites/goal.dart';
 import 'package:basket/sprites/player.dart';
@@ -9,6 +8,7 @@ import 'package:basket/sprites/basket_sprites.dart';
 import 'package:flame/components.dart';
 import 'package:flame/experimental.dart';
 import 'package:flutter/cupertino.dart';
+import '../screens/editor_screen.dart';
 import '../utils/movement.dart';
 import 'walls.dart';
 
@@ -36,6 +36,10 @@ class DragBrickWall extends BrickWall with DragCallbacks, TapCallbacks {
     super.onTapUp(event);
     (game as WorldEditorGame).showResize(this);
   }
+
+  DragBrickWall.fromJson(Map<String, dynamic> json) : super.fromJson(json) {
+    _position = position;
+  }
 }
 
 class DragWoodWall extends WoodWall with DragCallbacks, TapCallbacks {
@@ -61,6 +65,10 @@ class DragWoodWall extends WoodWall with DragCallbacks, TapCallbacks {
   void onTapUp(TapUpEvent event) {
     super.onTapUp(event);
     (game as WorldEditorGame).showResize(this);
+  }
+
+  DragWoodWall.fromJson(Map<String, dynamic> json) : super.fromJson(json) {
+    _position = position;
   }
 }
 
@@ -88,6 +96,10 @@ class DragSpike extends Spike with DragCallbacks, TapCallbacks {
     super.onTapUp(event);
     (game as WorldEditorGame).showResize(this);
   }
+
+  DragSpike.fromJson(Map<String, dynamic> json) : super.fromJson(json) {
+    _position = position;
+  }
 }
 
 class DragStar extends Star with DragCallbacks, TapCallbacks {
@@ -114,6 +126,10 @@ class DragStar extends Star with DragCallbacks, TapCallbacks {
     super.onTapUp(event);
     (game as WorldEditorGame).showResize(this);
   }
+
+  DragStar.fromJson(Map<String, dynamic> json) : super.fromJson(json) {
+    _position = position;
+  }
 }
 
 class DragBasket extends BasketGoal with DragCallbacks, TapCallbacks {
@@ -139,6 +155,10 @@ class DragBasket extends BasketGoal with DragCallbacks, TapCallbacks {
   void onTapUp(TapUpEvent event) {
     super.onTapUp(event);
     (game as WorldEditorGame).showResize(this);
+  }
+
+  DragBasket.fromJson(Map<String, dynamic> json) : super.fromJson(json) {
+    _position = position;
   }
 }
 
@@ -194,7 +214,14 @@ class DragBall extends BasketSprite with DragCallbacks, TapCallbacks {
   DragBall.fromJson(Map<String, dynamic> json)
       : super(position: Vector2(json['position.x'], json['position.y']),
               size: Vector2(json['size.x'], json['size.y']),
-              angle: json['angle']);
+              angle: json['angle']) {
+    current = BallType.beach;
+    for (var type in BallType.values) {
+      if (ballNames[type] == json['ball_type']) {
+        current = type;
+      }
+    }
+  }
 
   @override
   Map<String, dynamic> toJson() => {
