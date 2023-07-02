@@ -1,15 +1,17 @@
 import 'dart:math';
 
 import 'package:basket/game/basket_game.dart';
+import 'package:basket/sprites/basket_sprites.dart';
 import 'package:basket/sprites/circles.dart';
 import 'package:basket/sprites/enemies.dart';
 import 'package:basket/sprites/goal.dart';
 import 'package:basket/sprites/walls.dart';
 import 'package:flame/collisions.dart';
 import 'package:flame/components.dart';
-// import 'package:flame/events.dart';
-// import 'package:flutter/cupertino.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/services.dart';
+
+import '../utils/ball_type.dart';
 
 enum BallType {
   basket,
@@ -32,26 +34,51 @@ Map<BallType, int> ballSizes = {
   BallType.beach: 80,
 };
 
-class Player extends SpriteComponent with HasGameRef, KeyboardHandler, CollisionCallbacks {
-  Player()
-      : super(
-    size: Vector2.all(30.0),
-    anchor: Anchor.center,
-  );
+Map<BallType, double> momentOfIntertia = {
+  BallType.basket: 0.2,
+  BallType.metal: 0.2,
+  BallType.tennis: 0.2,
+  BallType.beach: 0.2,
+};
+
+class Player extends BasketSprite with HasGameRef, KeyboardHandler, CollisionCallbacks {
+  final BallType type;
+  final bool initialized;
+
+  Player({
+    required super.position,
+    required Vector2 size,
+    required this.type,
+    required this.initialized,
+  })
+      : _radius = ballSizes[type]!.toDouble() / 2,
+        _hitBox = CircleHitbox(radius: ballSizes[type]!.toDouble() / 2),
+        super(size: size);
 
   Vector2 _velocity = Vector2(0,0);
+  double _angularVelocity = 0;
   static const double _kickScale = 200;
   static const double _gravity = 10;
   Vector2 oldPosition = Vector2(0, 0);
-  static const double _radius = 15;
-  final CircleHitbox _hitBox = CircleHitbox(radius: _radius);
+  final double _radius;
+  final CircleHitbox _hitBox;
   bool pauseNextTick = false;
 
   @override
   Future<void> onLoad() async {
     super.onLoad();
-    sprite = await Sprite.load('blue_ball.png');
-    position = Vector2(200, 750);
+    var basket = await Sprite.load('basket_ball.png');
+    var beach = await Sprite.load('beach_ball.png');
+    var metal = await Sprite.load('metal_ball.png');
+    var tennis = await Sprite.load('tennis_ball.png');
+    sprites = <BallType, Sprite>{
+      BallType.metal: metal,
+      BallType.basket: basket,
+      BallType.tennis: tennis,
+      BallType.beach: beach,
+    };
+    current = type;
+    size = Vector2(ballSizes[current]!.toDouble(), ballSizes[current]!.toDouble());
     oldPosition = position;
     await add(_hitBox);
   }
@@ -73,6 +100,7 @@ class Player extends SpriteComponent with HasGameRef, KeyboardHandler, Collision
       (game as BasketBall).pause();
       pauseNextTick = false;
     }
+    angle += _angularVelocity * dt;
   }
 
   @override
@@ -89,53 +117,64 @@ class Player extends SpriteComponent with HasGameRef, KeyboardHandler, Collision
     return true;
   }
 
-  Player.fromJson(Map<String, dynamic> json) {
-    position.x = json['position.x'];
-    position.y = json['position.y'];
-    size.x = json['size.x'];
-    size.y = json['size.y'];
-    angle = json['angle'];
+  Player.fromJson(Map<String, dynamic> json)
+      : type = getTypeFromString(json['ball_type']),
+        _radius = ballSizes[getTypeFromString(json['ball_type'])]!.toDouble() / 2,
+        _hitBox = CircleHitbox(radius: ballSizes[getTypeFromString(json['ball_type'])]!.toDouble() / 2),
+        initialized = true,
+        super(position: Vector2(json['position.x'], json['position.y']),
+          size: Vector2(json['size.x'], json['size.y']),
+          angle: json['angle']) {
+    current = BallType.beach;
   }
 
+  @override
   Map<String, dynamic> toJson() => {
     'position.x': position.x,
     'position.y': position.y,
     'size.x': size.x,
     'size.y': size.y,
     'angle': angle,
+    'ball_type': ballNames[current],
   };
 
   @override
   void onCollision(Set<Vector2> intersectionPoints, PositionComponent other) {
     super.onCollision(intersectionPoints, other);
 
+    debugPrint('Collision with $other');
     // for (Vector2 point in intersectionPoints) {
     //   print('Collision points $point');
     // }
 
     double coefficient;
     if (other is Wall) {
-      coefficient = other.getCoefficient();
+      coefficient = other.getCoefficient(current);
       rectangleCollision(other, coefficient);
       other.hitBox.globalVertices();
+      debugPrint('${other.hitBox.globalVertices()}');
     } else if (other is MyCircle) {
       coefficient = other.getCoefficient();
       circleCollision(other, coefficient);
     } else if (other is Spike) {
       polygonCollision(
           other, other.hitBox.globalVertices(), other.deadlyVertices,
-          other.getCoefficient());
+          other.getCoefficient(current));
+      debugPrint('Absolute centre = ${other.absoluteCenter}');
+      debugPrint('${other.hitBox.globalVertices()}');
     } else if (other is Star) {
       polygonCollision(
           other, other.hitBox.globalVertices(), other.deadlyVertices,
-          other.getCoefficient());
+          other.getCoefficient(current));
+      debugPrint('Absolute centre = ${other.absoluteCenter}');
+      debugPrint('${other.hitBox.globalVertices()}');
     } else if (other is BasketGoal) {
       if (_hitBox.collidingWith(other.goalHitBox)) {
         (game as BasketBall).victory();
       }
       polygonCollision(
           other, other.hitBox.globalVertices(), other.deadlyVertices,
-          other.getCoefficient());
+          other.getCoefficient(current));
     } else {
       coefficient = 0.6;
       rectangleCollision(other, coefficient);
@@ -273,7 +312,16 @@ class Player extends SpriteComponent with HasGameRef, KeyboardHandler, Collision
   }
 
   Vector2 applyTangent(Vector2 velocity, Vector2 tangent, double coefficient) {
-    return velocity - tangent.scaled((1-coefficient) * tangent.dot(velocity));
+    // Deal with adding spin and improve small bounces
+    double tangentMomentum = tangent.dot(velocity) - momentOfIntertia[current]! * _angularVelocity * _radius;
+    debugPrint('tangent.dot = ${tangent.dot(velocity)}  angular = ${- momentOfIntertia[current]! * _angularVelocity * _radius}');
+    double newTangentMomentum = 0.01 * tangentMomentum;
+    double newSpeed = (tangentMomentum - newTangentMomentum) / (1 + momentOfIntertia[current]!);
+    debugPrint('angularVelocity (start) = $_angularVelocity');
+    debugPrint('calculation = $tangentMomentum   $newTangentMomentum   $_radius');
+    _angularVelocity = - newSpeed / _radius;
+    debugPrint('angularVelocity (end) = $_angularVelocity');
+    return velocity - tangent.scaled(tangent.dot(velocity) - newSpeed);
   }
 
   Vector2 reflect(Vector2 velocity, Vector2 normal, double coefficient) {
@@ -364,5 +412,10 @@ class Player extends SpriteComponent with HasGameRef, KeyboardHandler, Collision
 
   void impulse(Vector2 size) {
     _velocity += size;
+  }
+
+  @override
+  String getName() {
+    return 'Ball ${ballNames[type]}';
   }
 }

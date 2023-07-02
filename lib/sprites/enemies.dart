@@ -1,33 +1,51 @@
-import 'package:basket/game/basket_game.dart';
 import 'package:basket/sprites/basket_sprites.dart';
+import 'package:basket/sprites/player.dart';
 import 'package:flame/collisions.dart';
 import 'package:flame/components.dart';
+
+import '../utils/movement.dart';
 
 class Spike extends BasketSprite
     with CollisionCallbacks {
   late final PolygonHitbox hitBox;
-  final double coefficient;
+  final Map<BallType, dynamic> coefficient;
   late final List<bool> deadlyVertices;
+  Movement movement = Movement(
+      allow: false,
+      position: Vector2(0,0),
+      time: 1,
+      angle: 0
+  );
 
   Spike({
     super.position,
     required Vector2 size,
-    this.coefficient = 0.7,
-    double angle = 0
-  }) : super(
-    size: size,
-    priority: 3,
-    angle: radians(angle),
-  ) {
-    hitBox = PolygonHitbox.relative([Vector2(-0.5, 0.5),Vector2(0, -0.5),Vector2(0.5, 0.5),], parentSize: size);
-    deadlyVertices = [false, true, false];
-  }
+    this.coefficient = const {
+      BallType.basket: 0.7,
+      BallType.beach: 0.7,
+      BallType.metal: 0.7,
+      BallType.tennis: 0.7,
+    },
+    double angle = 0}) :
+        hitBox = PolygonHitbox([
+          Vector2(0, 1),
+          Vector2(0.5, 0),
+          Vector2(1, 1),
+        ].map((e) => Vector2(e.x*size.x, e.y*size.y)).toList()),
+        deadlyVertices = [false, true, false],
+        super(
+        size: size,
+        priority: 3,
+        angle: radians(angle),
+      );
 
   List<Vector2> getHitBox() {
-    return [Vector2(-0.5 * size.x, 0.5 * size.y),
-      Vector2(0, -0.5 * size.y),
-      Vector2(0.5 * size.x, 0.5 * size.y)];
+    return [
+      Vector2(0 * size.x, 1 * size.y),
+      Vector2(0.5 * size.x, 0 * size.y),
+      Vector2(1 * size.x, 1 * size.y)];
   }
+
   void addHitBox() async {
     try {
       remove(hitBox);
@@ -47,8 +65,8 @@ class Spike extends BasketSprite
     current = 0;
   }
 
-  double getCoefficient() {
-    return coefficient;
+  double getCoefficient(BallType ballType) {
+    return coefficient[ballType];
   }
 
   @override
@@ -56,13 +74,23 @@ class Spike extends BasketSprite
     return "Spike";
   }
 
-  Spike.fromJson(Map<String, dynamic> json) : coefficient = 0.7,
+  Spike.fromJson(Map<String, dynamic> json) :
+        coefficient = const {
+          BallType.basket: 0.7,
+          BallType.beach: 0.7,
+          BallType.metal: 0.7,
+          BallType.tennis: 0.7,
+        },
+        hitBox = PolygonHitbox([
+          Vector2(0, 1),
+          Vector2(0.5, 0),
+          Vector2(1, 1),
+        ].map((e) => Vector2(e.x*json['size.x'], e.y*json['size.y'])).toList()),
+        deadlyVertices = [false, true, false],
+        movement = Movement.fromJson(json['movement']),
         super(position: Vector2(json['position.x'], json['position.y']),
           size: Vector2(json['size.x'], json['size.y']),
-          angle: json['angle']) {
-    hitBox = PolygonHitbox.relative([Vector2(-0.5, 0.5),Vector2(0, -0.5),Vector2(0.5, 0.5),], parentSize: size);
-    deadlyVertices = [false, true, false];
-  }
+          angle: json['angle']);
 
   @override
   Map<String, dynamic> toJson() => {
@@ -71,90 +99,66 @@ class Spike extends BasketSprite
     'size.x': size.x,
     'size.y': size.y,
     'angle': degrees(angle),
+    'movement': movement.toJson(),
   };
 }
 
 class Star extends BasketSprite {
-  late PolygonHitbox hitBox;
-  final double coefficient;
-  late final List<bool> deadlyVertices;
-  final List<Vector2> hitBoxShape = [
-    Vector2(0.0, 0.5),
-    Vector2(-0.22252093395631434, -0.5),
-    Vector2(0.40096886790241915, 0.3019377358048382),
-    Vector2(-0.5, -0.14310413210779066),
-    Vector2(0.5, -0.14310413210779055),
-    Vector2(-0.4009688679024192, 0.3019377358048382),
-    Vector2(0.22252093395631445, -0.5),
-    Vector2(0.0, 0.5),
-    Vector2(-0.22252093395631434, -0.5),
-    Vector2(0.40096886790241915, 0.3019377358048382),
-    Vector2(-0.5, -0.14310413210779066),
-    Vector2(0.5, -0.14310413210779055),
-    Vector2(-0.4009688679024192, 0.3019377358048382),
-    Vector2(0.22252093395631445, -0.5)
-  ];
+  final PolygonHitbox hitBox;
+  final Map<BallType, double> coefficient;
+  final List<bool> deadlyVertices;
+  Movement movement = Movement(
+      allow: false,
+      position: Vector2(0,0),
+      time: 1,
+      angle: 0
+  );
 
   Star({
     super.position,
     required Vector2 size,
-    this.coefficient = 0.7,
-    double angle = 0
-  }) : super(
-    size: size,
-    priority: 3,
-    angle: radians(angle),
-  ) {
-    hitBox = PolygonHitbox(hitBoxShape.map((e) => Vector2(e.x*size.x, e.y*size.y)).toList());
-    deadlyVertices = List.filled(14, true);
-  }
-
-  List<Vector2> getHitBox() {
-    return [Vector2(0.0 * size.x, 0.5 * size.y),
-    Vector2(-0.22252093395631434 * size.x, -0.5 * size.y),
-    Vector2(0.40096886790241915 * size.x, 0.3019377358048382 * size.y),
-    Vector2(-0.5 * size.x, -0.14310413210779066 * size.y),
-    Vector2(0.5 * size.x, -0.14310413210779055 * size.y),
-    Vector2(-0.4009688679024192 * size.x, 0.3019377358048382 * size.y),
-    Vector2(0.22252093395631445 * size.x, -0.5 * size.y),
-    Vector2(0.0 * size.x, 0.5 * size.y),
-    Vector2(-0.22252093395631434 * size.x, -0.5 * size.y),
-    Vector2(0.40096886790241915 * size.x, 0.3019377358048382 * size.y),
-    Vector2(-0.5 * size.x, -0.14310413210779066 * size.y),
-    Vector2(0.5 * size.x, -0.14310413210779055 * size.y),
-    Vector2(-0.4009688679024192 * size.x, 0.3019377358048382 * size.y),
-    Vector2(0.22252093395631445 * size.x, -0.5 * size.y)];
-  }
+    this.coefficient = const {
+      BallType.basket: 0.7,
+      BallType.beach: 0.7,
+      BallType.metal: 0.7,
+      BallType.tennis: 0.7,
+      },
+    double angle = 0}) :
+        hitBox = PolygonHitbox([
+          Vector2(0.5000, 1.0000),
+          Vector2(0.5794, 0.6431),
+          Vector2(0.9010, 0.8019),
+          Vector2(0.6784, 0.5157),
+          Vector2(1.0000, 0.3569),
+          Vector2(0.6431, 0.3569),
+          Vector2(0.7225, 0.0000),
+          Vector2(0.5000, 0.2862),
+          Vector2(0.2775, 0.0000),
+          Vector2(0.3569, 0.3569),
+          Vector2(0.0000, 0.3569),
+          Vector2(0.3216, 0.5157),
+          Vector2(0.0990, 0.8019),
+          Vector2(0.4206, 0.6431),
+        ].map((e) => Vector2(e.x*size.x, e.y*size.y)).toList()),
+        deadlyVertices = List.filled(14, true),
+        super(
+        size: size,
+        priority: 3,
+        angle: radians(angle),
+        );
 
   @override
   Future<void>? onLoad() async {
     print('onLoad');
     await super.onLoad();
-    addHitBox();
+    add(hitBox);
     var star = await Sprite.load('game/star.png');
     sprites = <int, Sprite>{0: star};
     current = 0;
   }
 
-  void addHitBox() async {
-    try {
-      remove(hitBox);
-    } catch (error) {
-      print('error $error');
-    }
-    hitBox = PolygonHitbox(getHitBox());
-    await add(hitBox);
-  }
-
-  @override
-  void onGameResize(Vector2 size) {
-    print('onGameResize');
-    addHitBox();
-    super.onGameResize(size);
-  }
-
-  double getCoefficient() {
-    return coefficient;
+  double getCoefficient(BallType ballType) {
+    return coefficient[ballType]!;
   }
 
   @override
@@ -162,13 +166,34 @@ class Star extends BasketSprite {
     return "Star";
   }
 
-  Star.fromJson(Map<String, dynamic> json) : coefficient = 0.7,
+  Star.fromJson(Map<String, dynamic> json) :
+        coefficient = const {
+          BallType.basket: 0.7,
+          BallType.beach: 0.7,
+          BallType.metal: 0.7,
+          BallType.tennis: 0.7,
+        },
+        hitBox = PolygonHitbox([
+          Vector2(0.5000, 1.0000),
+          Vector2(0.5794, 0.6431),
+          Vector2(0.9010, 0.8019),
+          Vector2(0.6784, 0.5157),
+          Vector2(1.0000, 0.3569),
+          Vector2(0.6431, 0.3569),
+          Vector2(0.7225, 0.0000),
+          Vector2(0.5000, 0.2862),
+          Vector2(0.2775, 0.0000),
+          Vector2(0.3569, 0.3569),
+          Vector2(0.0000, 0.3569),
+          Vector2(0.3216, 0.5157),
+          Vector2(0.0990, 0.8019),
+          Vector2(0.4206, 0.6431),
+        ].map((e) => Vector2(e.x*json['size.x'], e.y*json['size.y'])).toList()),
+        deadlyVertices = List.filled(14, true),
+        movement = Movement.fromJson(json['movement']),
         super(position: Vector2(json['position.x'], json['position.y']),
           size: Vector2(json['size.x'], json['size.y']),
-          angle: json['angle']) {
-    hitBox = PolygonHitbox(hitBoxShape.map((e) => Vector2(e.x*size.x, e.y*size.y)).toList());
-    deadlyVertices = List.filled(14, true);
-  }
+          angle: json['angle']);
 
   @override
   Map<String, dynamic> toJson() => {
@@ -177,5 +202,6 @@ class Star extends BasketSprite {
     'size.x': size.x,
     'size.y': size.y,
     'angle': degrees(angle),
+    'movement': movement.toJson(),
   };
 }

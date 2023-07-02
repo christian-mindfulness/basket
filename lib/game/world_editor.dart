@@ -33,26 +33,24 @@ enum Operations {
 
 class WorldEditorGame extends FlameGame with HasDraggableComponents, HasTappableComponents {
   late BasketSprite currentComp;
-  final MyWorld _world = MyWorld();
+  final BackgroundImage _backgroundImage = BackgroundImage();
   late final CameraComponent cameraComponent;
   late final World world;
   Vector2 worldSize = Vector2(400, 800);
   final GameState gameState = GameState();
+  late Function exitCallback;
 
   ComponentList componentList = ComponentList([]);
 
-  //     [
-  //   DragWoodWall(size: Vector2(400, 10), position: Vector2(200, 5)),
-  //   DragWoodWall(size: Vector2(400, 15), position: Vector2(200, 795)),
-  //   DragBrickWall(size: Vector2(10, 800), position: Vector2(5, 400)),
-  //   DragBrickWall(size: Vector2(10, 800), position: Vector2(395, 400)),
-  //   DragBasket(size: Vector2(50, 50), position: Vector2(300, 100)),
-  //   DragBall(position: Vector2(200, 650), size: Vector2(30, 30), type: BallType.basket),
-  // ]);
+  void reset() {
+    world.removeAll(componentList.getList());
+    componentList = ComponentList([]);
+    _loadLevel(gameState.getLevelName);
+    world.addAll(componentList.getList());
+  }
 
   @override
   Future<void> onLoad() async {
-    _loadLevel(gameState.getLevelName);
     world = World();
     cameraComponent = CameraComponent.withFixedResolution(
       world: world,
@@ -61,9 +59,8 @@ class WorldEditorGame extends FlameGame with HasDraggableComponents, HasTappable
     );
     cameraComponent.viewfinder.anchor = Anchor.topLeft;
     addAll([world, cameraComponent]);
-    currentComp = BasketSprite(position: Vector2(0,0), size: Vector2(0,0));
-    world.addAll(componentList.getList());
-    world.add(_world);
+    reset();
+    world.add(_backgroundImage);
     //overlays.add('editorOverlay');
   }
 
@@ -71,12 +68,12 @@ class WorldEditorGame extends FlameGame with HasDraggableComponents, HasTappable
     print('LoadLevel: Level name = ${gameState.getLevelName}');
     if (levelName == '') {
       componentList.addAll([
-        DragWoodWall(size: Vector2(400, 10), position: Vector2(200, 5)),
-        DragWoodWall(size: Vector2(400, 15), position: Vector2(200, 795)),
-        DragBrickWall(size: Vector2(10, 800), position: Vector2(5, 400)),
-        DragBrickWall(size: Vector2(10, 800), position: Vector2(395, 400)),
-        DragBasket(size: Vector2(50, 50), position: Vector2(300, 100)),
-        DragBall(position: Vector2(200, 650), size: Vector2(30, 30), type: BallType.basket),
+        DragWoodWall(size: Vector2(400, 10), position: Vector2(200, 5), showResize: showResize),
+        DragWoodWall(size: Vector2(400, 15), position: Vector2(200, 795), showResize: showResize),
+        DragBrickWall(size: Vector2(10, 800), position: Vector2(5, 400), showResize: showResize),
+        DragBrickWall(size: Vector2(10, 800), position: Vector2(395, 400), showResize: showResize),
+        DragBasket(size: Vector2(50, 50), position: Vector2(300, 100), showResize: showResize),
+        DragBall(position: Vector2(200, 650), size: Vector2(30, 30), type: BallType.basket, showResize: showResize),
       ]);
     } else {
       final file = await localFile(levelName);
@@ -85,56 +82,59 @@ class WorldEditorGame extends FlameGame with HasDraggableComponents, HasTappable
       for (Map entry in json) {
         switch (entry['name']) {
           case 'Wood Wall': {
-            componentList.add(DragWoodWall.fromJson(entry['values']));
+            componentList.add(DragWoodWall.fromJson(entry['values'], showResize));
           }
           break;
           case 'Brick Wall': {
-            componentList.add(DragBrickWall.fromJson(entry['values']));
+            componentList.add(DragBrickWall.fromJson(entry['values'], showResize));
           }
           break;
           case 'Spike': {
-            componentList.add(DragSpike.fromJson(entry['values']));
+            componentList.add(DragSpike.fromJson(entry['values'], showResize));
           }
           break;
           case 'Star': {
-            componentList.add(DragStar.fromJson(entry['values']));
+            componentList.add(DragStar.fromJson(entry['values'], showResize));
           }
           break;
           case 'Goal': {
-            componentList.add(DragBasket.fromJson(entry['values']));
+            componentList.add(DragBasket.fromJson(entry['values'], showResize));
           }
           break;
           case 'Ball': {
-            componentList.add(DragBall.fromJson(entry['values']));
+            debugPrint('Creating ball from ${entry["values"]}');
+            componentList.add(DragBall.fromJson(entry['values'], showResize));
+            debugPrint('Created ball = ${componentList.last().current}');
           }
           break;
           default: {
             print('Entry ${entry["name"]} not recognised');
           }
         }
-        _world.add(componentList.last());
+        world.add(componentList.last());
         print(entry);
       }
     }
+    currentComp = componentList.last();
   }
 
   BasketSprite getComponent(Components component) {
     switch (component) {
       case Components.brickWall:
         {
-          return DragBrickWall(position: Vector2(100, 100), size: Vector2(10, 100));
+          return DragBrickWall(position: Vector2(100, 100), size: Vector2(10, 100), showResize: showResize);
         }
       case Components.woodWall:
         {
-          return DragWoodWall(position: Vector2(100, 100), size: Vector2(10, 100));
+          return DragWoodWall(position: Vector2(100, 100), size: Vector2(10, 100), showResize: showResize);
         }
       case Components.spike:
         {
-          return DragSpike(position: Vector2(100, 100), size: Vector2(10, 20));
+          return DragSpike(position: Vector2(100, 100), size: Vector2(10, 20), showResize: showResize);
         }
       case Components.star:
         {
-          return DragStar(position: Vector2(100, 100), size: Vector2(20, 20));
+          return DragStar(position: Vector2(100, 100), size: Vector2(20, 20), showResize: showResize);
         }
     }
   }
@@ -185,16 +185,22 @@ class WorldEditorGame extends FlameGame with HasDraggableComponents, HasTappable
     debugPrint(result, wrapWidth: 100);
   }
 
-  void startSaveRequest() async {
+  void startSaveRequest({required Function exit}) async {
     overlays.add('saveOverlay');
+    exitCallback = exit;
   }
 
   void saveFile(String fName) async {
     overlays.remove('saveOverlay');
+    debugPrint(fName);
     String levelLayout = jsonEncode(componentList);
     final file = await localFile(fName);
     file.writeAsString(levelLayout);
+    debugPrint('Have written this to file ${file.path}');
     debugPrint(levelLayout);
+    if (exitCallback != null) {
+      exitCallback();
+    }
   }
 
   void hideSaveOverlay() {
@@ -207,8 +213,8 @@ class WorldEditorGame extends FlameGame with HasDraggableComponents, HasTappable
 
   void deleteComponent() {
     debugPrint('Attempting to delete $currentComp');
+    world.remove(currentComp);
     componentList.remove(currentComp);
-    remove(currentComp);
   }
 
   List<Operations> getOperations() {

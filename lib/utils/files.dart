@@ -28,3 +28,8 @@ Future<List<String>> getLevelList() async {
   }
   return result;
 }
+
+Future<void> deleteFile(String fName) async {
+  File file = await localFile(fName);
+  await file.delete();
+}

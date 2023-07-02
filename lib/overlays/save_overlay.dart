@@ -1,4 +1,5 @@
 import 'dart:ui';
+import 'package:basket/game/game_state.dart';
 import 'package:flame/game.dart';
 import 'package:flutter/material.dart';
 
@@ -13,7 +14,8 @@ class SaveOverlay extends StatefulWidget {
 }
 
 class _NewOverlayState extends State<SaveOverlay> {
-  late String fName = '';
+  final GameState gameState = GameState();
+  late String fName = gameState.getLevelName;
 
   @override
   Widget build(BuildContext context) {
@@ -54,7 +56,13 @@ class _NewOverlayState extends State<SaveOverlay> {
                     SizedBox(
                         width: 230,
                         child: TextFormField(
-                          initialValue: '',
+                          autofocus: true,
+                          decoration: InputDecoration(border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(25.0),
+                            borderSide: const BorderSide(
+                              color: Colors.blue,
+                            ),),),
+                          initialValue: gameState.getLevelName,
                           keyboardType: TextInputType.text,
                           onChanged: (String? value){
                             setState(() {
@@ -66,6 +74,7 @@ class _NewOverlayState extends State<SaveOverlay> {
                       children: [
                         GestureDetector(
                           onTap: () {
+                            debugPrint('File name in dialogue $fName');
                             (widget.game as WorldEditorGame).saveFile(fName);
                           },
                           child: const Text('OK', style: TextStyle(color: Colors.blue),),

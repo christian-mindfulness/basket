@@ -25,6 +25,10 @@ class ComponentList {
     return _list.last;
   }
 
+  void clean() {
+    _list.clear();
+  }
+
   ComponentList.fromJson(List<Map<String, dynamic>> json) {
     for (Map<String, dynamic> element in json) {
       print(element);
@@ -37,6 +41,15 @@ class ComponentList {
     for (BasketSprite component in _list) {
       result.add({'name': component.getName()});
       result.last['values'] = component.toJson();
+    }
+    return result;
+  }
+
+  @override
+  String toString() {
+    String result = '';
+    for (BasketSprite component in _list) {
+      result += '${component.getName()}  ';
     }
     return result;
   }

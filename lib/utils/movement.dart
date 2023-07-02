@@ -18,4 +18,18 @@ class Movement {
       angle = newAngle;
     }
   }
+
+  Movement.fromJson(Map<String, dynamic> json) :
+      allow = json['allow'],
+      position = Vector2(json['position.x'], json['position.y']),
+      time = json['time'],
+      angle = json['angle'];
+
+  Map<String, dynamic> toJson() => {
+    'allow': allow,
+    'position.x': position.x,
+    'position.y': position.y,
+    'time': time,
+    'angle': degrees(angle),
+  };
 }

@@ -10,6 +10,7 @@ class VictoryOverlay extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    debugPrint('Is user level : ${(game as BasketBall).gameState.getIsUserLevel}');
     return Scaffold(
       backgroundColor: const Color(0x66bbbbbb),
       body:
@@ -24,17 +25,20 @@ class VictoryOverlay extends StatelessWidget {
               color: Colors.black),),
         MyElevatedButton(
             onPressed: (){
-              (game as BasketBall).replayLevel();
+              debugPrint('Calling reset');
+              (game as BasketBall).reset();
               },
             text: 'Replay level'),
-        MyElevatedButton(
+        (game as BasketBall).gameState.getIsUserLevel ?
+          const SizedBox() :
+          MyElevatedButton(
             onPressed: (){
               (game as BasketBall).nextLevel();
               },
             text: 'Next level'),
         MyElevatedButton(
             onPressed: (){
-              (game as BasketBall).mainMenu();
+              (game as BasketBall).quit();
               },
             text: 'Main menu'),
       ],

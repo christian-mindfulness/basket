@@ -1,16 +1,17 @@
 import 'dart:math';
 
 import 'package:basket/sprites/basket_sprites.dart';
+import 'package:basket/sprites/player.dart';
 import 'package:flame/collisions.dart';
 import 'package:flame/components.dart';
 
-import '../game/basket_game.dart';
+import '../utils/movement.dart';
 
 class BasketGoal extends BasketSprite
     with CollisionCallbacks {
   late final PolygonHitbox hitBox;
   late final CircleHitbox goalHitBox;
-  final double coefficient;
+  final Map<BallType, double> coefficient;
   final List<bool> deadlyVertices = List.filled(38, false);
   final List<Vector2> hitBoxShape = [
     Vector2(1.0, 0.0),
@@ -52,11 +53,23 @@ class BasketGoal extends BasketSprite
     Vector2(0.8939231012048832, 0.15628335990023734),
     Vector2(0.9, 0.0),
   ];
+  Movement movement = Movement(
+      allow: false,
+      position: Vector2(0,0),
+      time: 1,
+      angle: 0
+  );
+
 
   BasketGoal({
     super.position,
     required Vector2 size,
-    this.coefficient = 0.1,
+    this.coefficient = const {
+      BallType.basket: 0.1,
+      BallType.beach: 0.1,
+      BallType.metal: 0.1,
+      BallType.tennis: 0.1,
+    },
     double angle = 0
   }) : super(
     size: size,
@@ -77,11 +90,18 @@ class BasketGoal extends BasketSprite
     current = 0;
   }
 
-  double getCoefficient() {
-    return coefficient;
+  double getCoefficient(BallType ballType) {
+    return coefficient[ballType]!;
   }
 
-  BasketGoal.fromJson(Map<String, dynamic> json) : coefficient = 0.7,
+  BasketGoal.fromJson(Map<String, dynamic> json) :
+        coefficient = const {
+          BallType.basket: 0.1,
+          BallType.beach: 0.1,
+          BallType.metal: 0.1,
+          BallType.tennis: 0.1,
+        },
+        movement = Movement.fromJson(json['movement']),
         super(position: Vector2(json['position.x'], json['position.y']),
           size: Vector2(json['size.x'], json['size.y']),
           angle: json['angle']) {
@@ -96,6 +116,7 @@ class BasketGoal extends BasketSprite
     'size.x': size.x,
     'size.y': size.y,
     'angle': angle,
+    'movement': movement.toJson(),
   };
 
   @override

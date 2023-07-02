@@ -1,6 +1,5 @@
 import 'dart:math';
 
-import 'package:basket/game/world_editor.dart';
 import 'package:basket/sprites/enemies.dart';
 import 'package:basket/sprites/goal.dart';
 import 'package:basket/sprites/player.dart';
@@ -8,21 +7,21 @@ import 'package:basket/sprites/basket_sprites.dart';
 import 'package:flame/components.dart';
 import 'package:flame/experimental.dart';
 import 'package:flutter/cupertino.dart';
-import '../screens/editor_screen.dart';
-import '../utils/movement.dart';
+import '../utils/ball_type.dart';
 import 'walls.dart';
 
 class DragBrickWall extends BrickWall with DragCallbacks, TapCallbacks {
+  final Function showResize;
+
   DragBrickWall({required super.position,
                  required super.size,
+                 required this.showResize,
                  super.angle,
   }) {
     _position = position;
   }
 
   late Vector2 _position;
-  Movement movement = Movement(allow: false,
-      position: Vector2(0,0), time: 1, angle: 0);
 
   @override
   void onDragUpdate(DragUpdateEvent event) {
@@ -34,25 +33,26 @@ class DragBrickWall extends BrickWall with DragCallbacks, TapCallbacks {
   @override
   void onTapUp(TapUpEvent event) {
     super.onTapUp(event);
-    (game as WorldEditorGame).showResize(this);
+    showResize(this);
   }
 
-  DragBrickWall.fromJson(Map<String, dynamic> json) : super.fromJson(json) {
+  DragBrickWall.fromJson(Map<String, dynamic> json, this.showResize) : super.fromJson(json) {
     _position = position;
   }
 }
 
 class DragWoodWall extends WoodWall with DragCallbacks, TapCallbacks {
+  final Function showResize;
+
   DragWoodWall({required super.position,
     required super.size,
+    required this.showResize,
     super.angle,
   }) {
     _position = position;
   }
 
   late Vector2 _position;
-  Movement movement = Movement(allow: false,
-      position: Vector2(0,0), time: 1, angle: 0);
 
   @override
   void onDragUpdate(DragUpdateEvent event) {
@@ -64,25 +64,26 @@ class DragWoodWall extends WoodWall with DragCallbacks, TapCallbacks {
   @override
   void onTapUp(TapUpEvent event) {
     super.onTapUp(event);
-    (game as WorldEditorGame).showResize(this);
+    showResize(this);
   }
 
-  DragWoodWall.fromJson(Map<String, dynamic> json) : super.fromJson(json) {
+  DragWoodWall.fromJson(Map<String, dynamic> json, this.showResize) : super.fromJson(json) {
     _position = position;
   }
 }
 
 class DragSpike extends Spike with DragCallbacks, TapCallbacks {
+  final Function showResize;
+
   DragSpike({required super.position,
     required super.size,
+    required this.showResize,
     super.angle,
   }) {
     _position = position;
   }
 
   late Vector2 _position;
-  Movement movement = Movement(allow: false,
-      position: Vector2(0,0), time: 1, angle: 0);
 
   @override
   void onDragUpdate(DragUpdateEvent event) {
@@ -94,25 +95,26 @@ class DragSpike extends Spike with DragCallbacks, TapCallbacks {
   @override
   void onTapUp(TapUpEvent event) {
     super.onTapUp(event);
-    (game as WorldEditorGame).showResize(this);
+    showResize(this);
   }
 
-  DragSpike.fromJson(Map<String, dynamic> json) : super.fromJson(json) {
+  DragSpike.fromJson(Map<String, dynamic> json, this.showResize) : super.fromJson(json) {
     _position = position;
   }
 }
 
 class DragStar extends Star with DragCallbacks, TapCallbacks {
+  final Function showResize;
+
   DragStar({required super.position,
     required super.size,
+    required this.showResize,
     super.angle,
   }) {
     _position = position;
   }
 
   late Vector2 _position;
-  Movement movement = Movement(allow: false,
-      position: Vector2(0,0), time: 1, angle: 0);
 
   @override
   void onDragUpdate(DragUpdateEvent event) {
@@ -124,25 +126,26 @@ class DragStar extends Star with DragCallbacks, TapCallbacks {
   @override
   void onTapUp(TapUpEvent event) {
     super.onTapUp(event);
-    (game as WorldEditorGame).showResize(this);
+    showResize(this);
   }
 
-  DragStar.fromJson(Map<String, dynamic> json) : super.fromJson(json) {
+  DragStar.fromJson(Map<String, dynamic> json, this.showResize) : super.fromJson(json) {
     _position = position;
   }
 }
 
 class DragBasket extends BasketGoal with DragCallbacks, TapCallbacks {
+  final Function showResize;
+
   DragBasket({required super.position,
     required super.size,
+    required this.showResize,
     super.angle,
   }) {
     _position = position;
   }
 
   late Vector2 _position;
-  Movement movement = Movement(allow: false,
-      position: Vector2(0,0), time: 1, angle: 0);
 
   @override
   void onDragUpdate(DragUpdateEvent event) {
@@ -154,19 +157,23 @@ class DragBasket extends BasketGoal with DragCallbacks, TapCallbacks {
   @override
   void onTapUp(TapUpEvent event) {
     super.onTapUp(event);
-    (game as WorldEditorGame).showResize(this);
+    showResize(this);
   }
 
-  DragBasket.fromJson(Map<String, dynamic> json) : super.fromJson(json) {
+  DragBasket.fromJson(Map<String, dynamic> json, this.showResize) : super.fromJson(json) {
     _position = position;
   }
 }
 
 class DragBall extends BasketSprite with DragCallbacks, TapCallbacks {
+  final Function showResize;
+  final BallType type;
+
   DragBall({
     required super.position,
     required Vector2 size,
-    required BallType type,
+    required this.showResize,
+    required this.type,
   }) : super(
     size: size,
     priority: 3,
@@ -187,7 +194,7 @@ class DragBall extends BasketSprite with DragCallbacks, TapCallbacks {
       BallType.tennis: tennis,
       BallType.beach: beach,
     };
-    current = BallType.beach;
+    current = type;
     size = Vector2(ballSizes[current]!.toDouble(), ballSizes[current]!.toDouble());
     return super.onLoad();
   }
@@ -208,19 +215,15 @@ class DragBall extends BasketSprite with DragCallbacks, TapCallbacks {
   @override
   void onTapUp(TapUpEvent event) {
     super.onTapUp(event);
-    (game as WorldEditorGame).showResize(this);
+    showResize(this);
   }
 
-  DragBall.fromJson(Map<String, dynamic> json)
-      : super(position: Vector2(json['position.x'], json['position.y']),
+  DragBall.fromJson(Map<String, dynamic> json, this.showResize)
+      : type = getTypeFromString(json['ball_type']),
+        super(position: Vector2(json['position.x'], json['position.y']),
               size: Vector2(json['size.x'], json['size.y']),
               angle: json['angle']) {
-    current = BallType.beach;
-    for (var type in BallType.values) {
-      if (ballNames[type] == json['ball_type']) {
-        current = type;
-      }
-    }
+    current = type;
   }
 
   @override

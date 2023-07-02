@@ -1,9 +1,10 @@
+import 'package:basket/game/basket_game.dart';
 import 'package:basket/game/world_editor.dart';
 import 'package:flame/components.dart';
 import 'package:flutter/cupertino.dart';
 
-class MyWorld extends SpriteComponent with HasGameRef {
-  MyWorld()
+class BackgroundImage extends SpriteComponent with HasGameRef {
+  BackgroundImage()
       : super(priority: 0,
     size: Vector2(400, 800),
     position: Vector2(200, 400),
@@ -12,8 +13,7 @@ class MyWorld extends SpriteComponent with HasGameRef {
 
   @override
   Future<void>? onLoad() async {
-    sprite = await gameRef.loadSprite('green_background.png');
-    //size = sprite!.originalSize;
+    sprite = await Sprite.load('green_background.png');
     debugPrint(size.toString());
     debugPrint(position.toString());
     return super.onLoad();
@@ -22,7 +22,11 @@ class MyWorld extends SpriteComponent with HasGameRef {
   @override
   void onGameResize(Vector2 canvasSize) {
     super.onGameResize(canvasSize);
-    size = (gameRef as WorldEditorGame).worldSize;
+    if (gameRef is WorldEditorGame) {
+      size = (gameRef as WorldEditorGame).worldSize;
+    } else if (gameRef is BasketBall) {
+      size = (gameRef as BasketBall).worldSize;
+    }
     position = size / 2;
   }
 }

@@ -23,12 +23,12 @@ class FailedOverlay extends StatelessWidget {
               color: Colors.black),),
         MyElevatedButton(
             onPressed: (){
-              (game as BasketBall).replayLevel();
+              (game as BasketBall).reset();
               },
             text: 'Replay level'),
         MyElevatedButton(
             onPressed: (){
-              (game as BasketBall).mainMenu();
+              (game as BasketBall).quit();
               },
             text: 'Main menu'),
       ],

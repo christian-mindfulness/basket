@@ -1,16 +1,30 @@
 import 'package:basket/sprites/basket_sprites.dart';
+import 'package:basket/sprites/player.dart';
 import 'package:flame/collisions.dart';
 import 'package:flame/components.dart';
+
+import '../utils/movement.dart';
 
 class Wall extends BasketSprite
     with CollisionCallbacks {
   final hitBox = RectangleHitbox();
-  final double coefficient;
+  final Map<BallType, double> coefficient;
+  Movement movement = Movement(
+      allow: false,
+      position: Vector2(0,0),
+      time: 1,
+      angle: 0
+  );
 
   Wall({
     required super.position,
     required Vector2 size,
-    this.coefficient = 0.7,
+    this.coefficient = const {
+      BallType.basket: 0.7,
+      BallType.beach: 0.7,
+      BallType.metal: 0.7,
+      BallType.tennis: 0.7,
+    },
     double angle = 0
   }) : super(
     size: size,
@@ -27,8 +41,8 @@ class Wall extends BasketSprite
     current = 0;
   }
 
-  double getCoefficient() {
-    return coefficient;
+  double getCoefficient(BallType ballType) {
+    return coefficient[ballType]!;
   }
 
   @override
@@ -36,7 +50,14 @@ class Wall extends BasketSprite
     return "Wall";
   }
 
-  Wall.fromJson(Map<String, dynamic> json) : coefficient = 0.7,
+  Wall.fromJson(Map<String, dynamic> json) :
+        coefficient = const {
+          BallType.basket: 0.7,
+          BallType.beach: 0.7,
+          BallType.metal: 0.7,
+          BallType.tennis: 0.7,
+        },
+        movement = Movement.fromJson(json['movement']),
         super(position: Vector2(json['position.x'], json['position.y']),
           size: Vector2(json['size.x'], json['size.y']),
           angle: json['angle']);
@@ -48,6 +69,7 @@ class Wall extends BasketSprite
     'size.x': size.x,
     'size.y': size.y,
     'angle': degrees(angle),
+    'movement': movement.toJson(),
   };
 }
 

@@ -222,7 +222,7 @@ class _NewOverlayState extends State<NewOverlay> {
             inputFormatters: [FilteringTextInputFormatter.digitsOnly],
             onChanged: (String? value){
               setState(() {
-                movement.angle = double.parse(value!);
+                movement.angle = radians(double.parse(value!));
                 (widget.game as WorldEditorGame).setMovement(movement);
               });
             },),),
