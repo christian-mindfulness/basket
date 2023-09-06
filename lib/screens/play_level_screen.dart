@@ -1,4 +1,5 @@
 import 'package:basket/game/basket_game.dart';
+import 'package:basket/overlays/information_overlay.dart';
 import 'package:flame/game.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -11,8 +12,13 @@ import '../overlays/victory_overlay.dart';
 import 'main_menu.dart';
 
 class PlayLevelScreen extends StatefulWidget {
-  const PlayLevelScreen({super.key, required this.levelName});
+  const PlayLevelScreen({
+    super.key,
+    required this.levelName,
+    required this.isAsset,
+  });
   final String levelName;
+  final bool isAsset;
   @override
   State<PlayLevelScreen> createState() => _PlayLevelScreenState();
 }
@@ -24,6 +30,7 @@ class _PlayLevelScreenState extends State<PlayLevelScreen> {
   void initState() {
     GameState gameState = GameState();
     gameState.setLevel(name: widget.levelName);
+    gameState.setIsAsset(widget.isAsset);
     gameState.setExitCallBack(
         () {
           Navigator.pop(context);
@@ -50,7 +57,7 @@ class _PlayLevelScreenState extends State<PlayLevelScreen> {
               'mainMenu': (context, basketGame) => MainMenu(basketGame),
               'victoryOverlay': (context, basketGame) => VictoryOverlay(basketGame),
               'failedOverlay': (context, basketGame) => FailedOverlay(basketGame),
-              'tutorialOverlay': (context, basketGame) => TutorialOverlay(basketGame),
+              'informationOverlay': (context, basketGame) => InformationOverlay(basketGame),
             },
           );
         }

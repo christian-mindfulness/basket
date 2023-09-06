@@ -77,13 +77,19 @@ class _NewOverlayState extends State<SaveOverlay> {
                             debugPrint('File name in dialogue $fName');
                             (widget.game as WorldEditorGame).saveFile(fName);
                           },
-                          child: const Text('OK', style: TextStyle(color: Colors.blue),),
+                          child: Container(
+                              padding: const EdgeInsets.all(10),
+                              color: Colors.yellow,
+                              child: const Text('OK', style: TextStyle(color: Colors.blue),)),
                         ),
                         GestureDetector(
                           onTap: () {
                             (widget.game as WorldEditorGame).hideSaveOverlay();
                           },
-                          child: const Text('Cancel', style: TextStyle(color: Colors.blue),),
+                          child: Container(
+                                padding: const EdgeInsets.all(10),
+                                color: Colors.yellow,
+                                child: const Text('Cancel', style: TextStyle(color: Colors.blue),)),
                         ),
                       ],
                     ),

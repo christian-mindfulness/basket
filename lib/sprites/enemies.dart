@@ -3,41 +3,36 @@ import 'package:basket/sprites/player.dart';
 import 'package:flame/collisions.dart';
 import 'package:flame/components.dart';
 
+import '../utils/clone_list.dart';
 import '../utils/movement.dart';
+import '../utils/time_and_velocity.dart';
+import '../utils/update_position.dart';
 
-class Spike extends BasketSprite
+class Spike extends MovementSprite
     with CollisionCallbacks {
   late final PolygonHitbox hitBox;
   final Map<BallType, dynamic> coefficient;
   late final List<bool> deadlyVertices;
-  Movement movement = Movement(
-      allow: false,
-      position: Vector2(0,0),
-      time: 1,
-      angle: 0
-  );
+  late List<Vector2> oldGlobalVertices;
 
   Spike({
-    super.position,
-    required Vector2 size,
+    required super.startPosition,
+    required super.size,
     this.coefficient = const {
       BallType.basket: 0.7,
       BallType.beach: 0.7,
       BallType.metal: 0.7,
       BallType.tennis: 0.7,
     },
-    double angle = 0}) :
+    super.startAngle,
+    }) :
         hitBox = PolygonHitbox([
           Vector2(0, 1),
           Vector2(0.5, 0),
           Vector2(1, 1),
         ].map((e) => Vector2(e.x*size.x, e.y*size.y)).toList()),
         deadlyVertices = [false, true, false],
-        super(
-        size: size,
-        priority: 3,
-        angle: radians(angle),
-      );
+        super();
 
   List<Vector2> getHitBox() {
     return [
@@ -65,6 +60,12 @@ class Spike extends BasketSprite
     current = 0;
   }
 
+  @override
+  void update(double dt) {
+    oldGlobalVertices = cloneList(hitBox.globalVertices());
+    super.update(dt);
+  }
+
   double getCoefficient(BallType ballType) {
     return coefficient[ballType];
   }
@@ -87,43 +88,26 @@ class Spike extends BasketSprite
           Vector2(1, 1),
         ].map((e) => Vector2(e.x*json['size.x'], e.y*json['size.y'])).toList()),
         deadlyVertices = [false, true, false],
-        movement = Movement.fromJson(json['movement']),
-        super(position: Vector2(json['position.x'], json['position.y']),
-          size: Vector2(json['size.x'], json['size.y']),
-          angle: json['angle']);
-
-  @override
-  Map<String, dynamic> toJson() => {
-    'position.x': position.x,
-    'position.y': position.y,
-    'size.x': size.x,
-    'size.y': size.y,
-    'angle': degrees(angle),
-    'movement': movement.toJson(),
-  };
+        super.fromJson(json);
 }
 
-class Star extends BasketSprite {
+class Star extends MovementSprite {
   final PolygonHitbox hitBox;
   final Map<BallType, double> coefficient;
   final List<bool> deadlyVertices;
-  Movement movement = Movement(
-      allow: false,
-      position: Vector2(0,0),
-      time: 1,
-      angle: 0
-  );
+  late List<Vector2> oldGlobalVertices;
 
   Star({
-    super.position,
-    required Vector2 size,
+    required super.startPosition,
+    required super.size,
     this.coefficient = const {
       BallType.basket: 0.7,
       BallType.beach: 0.7,
       BallType.metal: 0.7,
       BallType.tennis: 0.7,
       },
-    double angle = 0}) :
+    super.startAngle = 0,
+    }) :
         hitBox = PolygonHitbox([
           Vector2(0.5000, 1.0000),
           Vector2(0.5794, 0.6431),
@@ -141,11 +125,7 @@ class Star extends BasketSprite {
           Vector2(0.4206, 0.6431),
         ].map((e) => Vector2(e.x*size.x, e.y*size.y)).toList()),
         deadlyVertices = List.filled(14, true),
-        super(
-        size: size,
-        priority: 3,
-        angle: radians(angle),
-        );
+        super();
 
   @override
   Future<void>? onLoad() async {
@@ -155,6 +135,12 @@ class Star extends BasketSprite {
     var star = await Sprite.load('game/star.png');
     sprites = <int, Sprite>{0: star};
     current = 0;
+  }
+
+  @override
+  void update(double dt) {
+    oldGlobalVertices = cloneList(hitBox.globalVertices());
+    super.update(dt);
   }
 
   double getCoefficient(BallType ballType) {
@@ -190,18 +176,5 @@ class Star extends BasketSprite {
           Vector2(0.4206, 0.6431),
         ].map((e) => Vector2(e.x*json['size.x'], e.y*json['size.y'])).toList()),
         deadlyVertices = List.filled(14, true),
-        movement = Movement.fromJson(json['movement']),
-        super(position: Vector2(json['position.x'], json['position.y']),
-          size: Vector2(json['size.x'], json['size.y']),
-          angle: json['angle']);
-
-  @override
-  Map<String, dynamic> toJson() => {
-    'position.x': position.x,
-    'position.y': position.y,
-    'size.x': size.x,
-    'size.y': size.y,
-    'angle': degrees(angle),
-    'movement': movement.toJson(),
-  };
+        super.fromJson(json);
 }

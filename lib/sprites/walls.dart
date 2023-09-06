@@ -3,34 +3,26 @@ import 'package:basket/sprites/player.dart';
 import 'package:flame/collisions.dart';
 import 'package:flame/components.dart';
 
-import '../utils/movement.dart';
+import '../utils/clone_list.dart';
 
-class Wall extends BasketSprite
+class Wall extends MovementSprite
     with CollisionCallbacks {
   final hitBox = RectangleHitbox();
-  final Map<BallType, double> coefficient;
-  Movement movement = Movement(
-      allow: false,
-      position: Vector2(0,0),
-      time: 1,
-      angle: 0
-  );
+  final Map<BallType, double> _coefficient = const {
+    BallType.basket: 0.7,
+    BallType.beach: 0.7,
+    BallType.metal: 0.7,
+    BallType.tennis: 0.7,
+  };
+  late List<Vector2> oldGlobalVertices;
 
   Wall({
-    required super.position,
-    required Vector2 size,
-    this.coefficient = const {
-      BallType.basket: 0.7,
-      BallType.beach: 0.7,
-      BallType.metal: 0.7,
-      BallType.tennis: 0.7,
-    },
-    double angle = 0
-  }) : super(
-    size: size,
-    priority: 3,
-    angle: radians(angle),
-  );
+    required super.startPosition,
+    required super.size,
+    super.startAngle,
+  }) : super() {
+    oldGlobalVertices = List<Vector2>.from(hitBox.globalVertices());
+  }
 
   @override
   Future<void>? onLoad() async {
@@ -42,7 +34,7 @@ class Wall extends BasketSprite
   }
 
   double getCoefficient(BallType ballType) {
-    return coefficient[ballType]!;
+    return _coefficient[ballType]!;
   }
 
   @override
@@ -50,35 +42,25 @@ class Wall extends BasketSprite
     return "Wall";
   }
 
-  Wall.fromJson(Map<String, dynamic> json) :
-        coefficient = const {
-          BallType.basket: 0.7,
-          BallType.beach: 0.7,
-          BallType.metal: 0.7,
-          BallType.tennis: 0.7,
-        },
-        movement = Movement.fromJson(json['movement']),
-        super(position: Vector2(json['position.x'], json['position.y']),
-          size: Vector2(json['size.x'], json['size.y']),
-          angle: json['angle']);
-
   @override
-  Map<String, dynamic> toJson() => {
-    'position.x': position.x,
-    'position.y': position.y,
-    'size.x': size.x,
-    'size.y': size.y,
-    'angle': degrees(angle),
-    'movement': movement.toJson(),
-  };
+  void update(double dt) {
+    oldGlobalVertices = cloneList(hitBox.globalVertices());
+    super.update(dt);
+  }
+
+  Wall.fromJson(Map<String, dynamic> json) :
+        super.fromJson(json)
+  {
+    oldGlobalVertices = List<Vector2>.from(hitBox.globalVertices());
+  }
 }
 
 
 class BrickWall extends Wall {
-  BrickWall({super.position,
+  BrickWall({
+    required super.startPosition,
     required super.size,
-    super.coefficient,
-    super.angle,
+    super.startAngle,
   });
 
   @override
@@ -87,6 +69,17 @@ class BrickWall extends Wall {
     var wall = await Sprite.load('game/brick_wall.png');
     sprites = <int, Sprite>{0: wall};
     current = 0;
+  }
+
+  @override
+  double getCoefficient (BallType ballType) {
+    const Map<BallType, double> coefficient = {
+      BallType.basket: 0.7,
+      BallType.beach: 0.7,
+      BallType.metal: 0.8,
+      BallType.tennis: 0.7,
+    };
+    return coefficient[ballType]!;
   }
 
   BrickWall.fromJson(Map<String, dynamic> json) : super.fromJson(json);
@@ -98,10 +91,10 @@ class BrickWall extends Wall {
 }
 
 class WoodWall extends Wall {
-  WoodWall({super.position,
+  WoodWall({
+    required super.startPosition,
     required super.size,
-    super.coefficient,
-    super.angle,
+    super.startAngle,
   });
 
   @override
@@ -112,10 +105,112 @@ class WoodWall extends Wall {
     current = 0;
   }
 
+  @override
+  double getCoefficient (BallType ballType) {
+    const Map<BallType, double> coefficient = {
+      BallType.basket: 0.7,
+      BallType.beach: 0.7,
+      BallType.metal: 0.5,
+      BallType.tennis: 0.7,
+    };
+    return coefficient[ballType]!;
+  }
   WoodWall.fromJson(Map<String, dynamic> json) : super.fromJson(json);
 
   @override
   String getName() {
     return "Wood Wall";
+  }
+}
+
+class Slime extends Wall {
+  Slime({
+    required super.startPosition,
+    required super.size,
+    super.startAngle,
+  });
+
+  @override
+  Future<void>? onLoad() async {
+    await super.onLoad();
+    var wall = await Sprite.load('game/slime.png');
+    sprites = <int, Sprite>{0: wall};
+    current = 0;
+  }
+
+  @override
+  double getCoefficient (BallType ballType) {
+    const Map<BallType, double> coefficient = {
+      BallType.basket: 0.3,
+      BallType.beach: 0.3,
+      BallType.metal: 0.3,
+      BallType.tennis: 0.3,
+    };
+    return coefficient[ballType]!;
+  }
+
+  Slime.fromJson(Map<String, dynamic> json) : super.fromJson(json);
+
+  @override
+  String getName() {
+    return "Slime";
+  }
+}
+
+class Trampoline extends Wall {
+  Trampoline({
+    required super.startPosition,
+    required super.size,
+    super.startAngle,
+  });
+
+  @override
+  Future<void>? onLoad() async {
+    await super.onLoad();
+    var wall = await Sprite.load('game/trampoline.png');
+    sprites = <int, Sprite>{0: wall};
+    current = 0;
+  }
+
+  Trampoline.fromJson(Map<String, dynamic> json) : super.fromJson(json);
+
+  @override
+  double getCoefficient (BallType ballType) {
+    const Map<BallType, double> coefficient = {
+      BallType.basket: 1.1,
+      BallType.beach: 1.1,
+      BallType.metal: 1.1,
+      BallType.tennis: 1.1,
+    };
+    return coefficient[ballType]!;
+  }
+
+  @override
+  String getName() {
+    return "Trampoline";
+  }
+}
+
+
+class OneWayPlatform extends Wall {
+  OneWayPlatform({
+    required super.startPosition,
+    required super.size,
+    super.startAngle,
+  });
+
+  @override
+  Future<void>? onLoad() async {
+    await super.onLoad();
+    var wall = await Sprite.load('game/one_way_platform.png');
+    sprites = <int, Sprite>{0: wall};
+    current = 0;
+  }
+
+  OneWayPlatform.fromJson(Map<String, dynamic> json) : super.fromJson(json);
+
+  @override
+  String getName() {
+    return "OneWayPlatform";
   }
 }

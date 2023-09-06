@@ -9,14 +9,16 @@ import 'package:flame/experimental.dart';
 import 'package:flutter/cupertino.dart';
 import '../utils/ball_type.dart';
 import 'walls.dart';
+import 'backgrounds.dart';
 
 class DragBrickWall extends BrickWall with DragCallbacks, TapCallbacks {
   final Function showResize;
 
-  DragBrickWall({required super.position,
-                 required super.size,
-                 required this.showResize,
-                 super.angle,
+  DragBrickWall({
+    required super.startPosition,
+    required super.size,
+    required this.showResize,
+    super.startAngle,
   }) {
     _position = position;
   }
@@ -27,7 +29,12 @@ class DragBrickWall extends BrickWall with DragCallbacks, TapCallbacks {
   void onDragUpdate(DragUpdateEvent event) {
     _position += event.delta;
     position = dragUpdate(hitBox.globalVertices(), absoluteCenter, _position);
+    startPosition = position;
     super.onDragUpdate(event);
+  }
+
+  @override
+  void update(double dt) {
   }
 
   @override
@@ -44,10 +51,11 @@ class DragBrickWall extends BrickWall with DragCallbacks, TapCallbacks {
 class DragWoodWall extends WoodWall with DragCallbacks, TapCallbacks {
   final Function showResize;
 
-  DragWoodWall({required super.position,
+  DragWoodWall({
+    required super.startPosition,
     required super.size,
     required this.showResize,
-    super.angle,
+    super.startAngle,
   }) {
     _position = position;
   }
@@ -58,7 +66,12 @@ class DragWoodWall extends WoodWall with DragCallbacks, TapCallbacks {
   void onDragUpdate(DragUpdateEvent event) {
     _position += event.delta;
     position = dragUpdate(hitBox.globalVertices(), absoluteCenter, _position);
+    startPosition = position;
     super.onDragUpdate(event);
+  }
+
+  @override
+  void update(double dt) {
   }
 
   @override
@@ -72,13 +85,14 @@ class DragWoodWall extends WoodWall with DragCallbacks, TapCallbacks {
   }
 }
 
-class DragSpike extends Spike with DragCallbacks, TapCallbacks {
+class DragSlime extends Slime with DragCallbacks, TapCallbacks {
   final Function showResize;
 
-  DragSpike({required super.position,
+  DragSlime({
+    required super.startPosition,
     required super.size,
     required this.showResize,
-    super.angle,
+    super.startAngle,
   }) {
     _position = position;
   }
@@ -88,7 +102,164 @@ class DragSpike extends Spike with DragCallbacks, TapCallbacks {
   @override
   void onDragUpdate(DragUpdateEvent event) {
     _position += event.delta;
-    position = Vector2(roundPosition(_position.x, 400), roundPosition(_position.y, 800));
+    position = dragUpdate(hitBox.globalVertices(), absoluteCenter, _position);
+    startPosition = position;
+    super.onDragUpdate(event);
+  }
+
+  @override
+  void update(double dt) {
+  }
+
+  @override
+  void onTapUp(TapUpEvent event) {
+    super.onTapUp(event);
+    showResize(this);
+  }
+
+  DragSlime.fromJson(Map<String, dynamic> json, this.showResize) : super.fromJson(json) {
+    _position = position;
+  }
+}
+
+
+class DragTrampoline extends Trampoline with DragCallbacks, TapCallbacks {
+  final Function showResize;
+
+  DragTrampoline({
+    required super.startPosition,
+    required super.size,
+    required this.showResize,
+    super.startAngle,
+  }) {
+    _position = position;
+  }
+
+  late Vector2 _position;
+
+  @override
+  void onDragUpdate(DragUpdateEvent event) {
+    _position += event.delta;
+    position = dragUpdate(hitBox.globalVertices(), absoluteCenter, _position);
+    startPosition = position;
+    super.onDragUpdate(event);
+  }
+
+  @override
+  void update(double dt) {
+  }
+
+  @override
+  void onTapUp(TapUpEvent event) {
+    super.onTapUp(event);
+    showResize(this);
+  }
+
+  DragTrampoline.fromJson(Map<String, dynamic> json, this.showResize) : super.fromJson(json) {
+    _position = position;
+  }
+}
+
+
+class DragArrow extends Arrow with DragCallbacks, TapCallbacks {
+  final Function showResize;
+
+  DragArrow({
+    required super.startPosition,
+    required super.size,
+    required this.showResize,
+    super.startAngle,
+  }) {
+    _position = position;
+  }
+
+  late Vector2 _position;
+
+  @override
+  void onDragUpdate(DragUpdateEvent event) {
+    _position += event.delta;
+    position = dragUpdate(hitBox.globalVertices(), absoluteCenter, _position);
+    debugPrint('Position update $_position $_position');
+    startPosition = position;
+    super.onDragUpdate(event);
+  }
+
+  @override
+  void update(double dt) {
+  }
+
+  @override
+  void onTapUp(TapUpEvent event) {
+    super.onTapUp(event);
+    showResize(this);
+  }
+
+  DragArrow.fromJson(Map<String, dynamic> json, this.showResize) : super.fromJson(json) {
+    _position = position;
+  }
+}
+
+
+class DragOneWayPlatform extends OneWayPlatform with DragCallbacks, TapCallbacks {
+  final Function showResize;
+
+  DragOneWayPlatform({
+    required super.startPosition,
+    required super.size,
+    required this.showResize,
+    super.startAngle,
+  }) {
+    _position = position;
+  }
+
+  late Vector2 _position;
+
+  @override
+  void onDragUpdate(DragUpdateEvent event) {
+    _position += event.delta;
+    position = dragUpdate(hitBox.globalVertices(), absoluteCenter, _position);
+    startPosition = position;
+    super.onDragUpdate(event);
+  }
+
+  @override
+  void update(double dt) {
+  }
+
+  @override
+  void onTapUp(TapUpEvent event) {
+    super.onTapUp(event);
+    showResize(this);
+  }
+
+  DragOneWayPlatform.fromJson(Map<String, dynamic> json, this.showResize) : super.fromJson(json) {
+    _position = position;
+  }
+}
+
+
+class DragSpike extends Spike with DragCallbacks, TapCallbacks {
+  final Function showResize;
+
+  DragSpike({required super.startPosition,
+    required super.size,
+    required this.showResize,
+    super.startAngle,
+  }) {
+    _position = position;
+  }
+
+  late Vector2 _position;
+
+  @override
+  void update(double dt) {
+  }
+
+  @override
+  void onDragUpdate(DragUpdateEvent event) {
+    _position += event.delta;
+    position = Vector2(roundPosition(_position.x, size.x, 400), roundPosition(_position.y, size.y, 800));
+    startPosition = position;
     super.onDragUpdate(event);
   }
 
@@ -106,10 +277,10 @@ class DragSpike extends Spike with DragCallbacks, TapCallbacks {
 class DragStar extends Star with DragCallbacks, TapCallbacks {
   final Function showResize;
 
-  DragStar({required super.position,
+  DragStar({required super.startPosition,
     required super.size,
     required this.showResize,
-    super.angle,
+    super.startAngle,
   }) {
     _position = position;
   }
@@ -117,9 +288,14 @@ class DragStar extends Star with DragCallbacks, TapCallbacks {
   late Vector2 _position;
 
   @override
+  void update(double dt) {
+  }
+
+  @override
   void onDragUpdate(DragUpdateEvent event) {
     _position += event.delta;
-    position = Vector2(roundPosition(_position.x, 400), roundPosition(_position.y, 800));
+    position = Vector2(roundPosition(_position.x, size.x, 400), roundPosition(_position.y, size.y, 800));
+    startPosition = position;
     super.onDragUpdate(event);
   }
 
@@ -137,10 +313,10 @@ class DragStar extends Star with DragCallbacks, TapCallbacks {
 class DragBasket extends BasketGoal with DragCallbacks, TapCallbacks {
   final Function showResize;
 
-  DragBasket({required super.position,
+  DragBasket({required super.startPosition,
     required super.size,
     required this.showResize,
-    super.angle,
+    super.startAngle,
   }) {
     _position = position;
   }
@@ -150,8 +326,13 @@ class DragBasket extends BasketGoal with DragCallbacks, TapCallbacks {
   @override
   void onDragUpdate(DragUpdateEvent event) {
     _position += event.delta;
-    position = Vector2(roundPosition(_position.x, 400), roundPosition(_position.y, 800));
+    position = Vector2(roundPosition(_position.x, size.x, 400), roundPosition(_position.y, size.y, 800));
+    startPosition = position;
     super.onDragUpdate(event);
+  }
+
+  @override
+  void update(double dt) {
   }
 
   @override
@@ -208,7 +389,7 @@ class DragBall extends BasketSprite with DragCallbacks, TapCallbacks {
   @override
   void onDragUpdate(DragUpdateEvent event) {
     _position += event.delta;
-    position = Vector2(roundPosition(_position.x, 400), roundPosition(_position.y, 800));
+    position = Vector2(roundPosition(_position.x, size.x, 400), roundPosition(_position.y, size.y, 800));
     super.onDragUpdate(event);
   }
 
@@ -249,8 +430,13 @@ double getPosition(double inPos, double minX, double maxX, double limit) {
   return newPos;
 }
 
-double roundPosition(double inPos, double max) {
+double roundPosition(double inPos, double size, double max) {
   double offset = 5;
+  // if ((size ~/ 5).isOdd) {
+  //   offset = 5;
+  // } else {
+  //   offset = 0;
+  // }
   double newPos = ((inPos - offset) * 0.1).round().toDouble() / 0.1 + offset;
   if (newPos > max) {
     return max - offset;

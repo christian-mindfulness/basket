@@ -7,10 +7,11 @@ class GameState {
   static final GameState _instance = GameState._internal();
 
   bool _isUserLevel = false;
+  bool _isAsset = false;
   int _levelNumber = 0;
   String _levelName = '';
   Function exitCallback = (){};
-  LevelOptions _levelOptions = LevelOptions(gravity: Vector2(0, -10));
+  LevelOptions _levelOptions = LevelOptions(gravity: Vector2(0, 10));
 
   factory GameState() {
     return _instance;
@@ -19,6 +20,8 @@ class GameState {
   GameState._internal();
 
   bool get getIsUserLevel => _isUserLevel;
+
+  bool get getIsAsset => _isAsset;
 
   int get getLevelNumber => _levelNumber;
 
@@ -40,6 +43,10 @@ class GameState {
 
   void setExitCallBack(Function callback) {
     exitCallback = callback;
+  }
+
+  void setIsAsset(bool newValue) {
+    _isAsset = newValue;
   }
 
   void setLevelOptions(LevelOptions newOptions) {

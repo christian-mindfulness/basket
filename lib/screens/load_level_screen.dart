@@ -40,7 +40,10 @@ class _LoadLevelScreenState extends State<LoadLevelScreen> {
           context,
           MaterialPageRoute(
             builder: (context) =>
-                PlayLevelScreen(levelName: e),
+                PlayLevelScreen(
+                  levelName: e,
+                  isAsset: false,
+                ),
           ),
         );
         debugPrint('Play $e');

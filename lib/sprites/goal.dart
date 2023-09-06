@@ -5,9 +5,12 @@ import 'package:basket/sprites/player.dart';
 import 'package:flame/collisions.dart';
 import 'package:flame/components.dart';
 
+import '../utils/clone_list.dart';
 import '../utils/movement.dart';
+import '../utils/time_and_velocity.dart';
+import '../utils/update_position.dart';
 
-class BasketGoal extends BasketSprite
+class BasketGoal extends MovementSprite
     with CollisionCallbacks {
   late final PolygonHitbox hitBox;
   late final CircleHitbox goalHitBox;
@@ -53,29 +56,19 @@ class BasketGoal extends BasketSprite
     Vector2(0.8939231012048832, 0.15628335990023734),
     Vector2(0.9, 0.0),
   ];
-  Movement movement = Movement(
-      allow: false,
-      position: Vector2(0,0),
-      time: 1,
-      angle: 0
-  );
-
+  late List<Vector2> oldGlobalVertices;
 
   BasketGoal({
-    super.position,
-    required Vector2 size,
+    required super.startPosition,
+    required super.size,
     this.coefficient = const {
       BallType.basket: 0.1,
       BallType.beach: 0.1,
       BallType.metal: 0.1,
       BallType.tennis: 0.1,
     },
-    double angle = 0
-  }) : super(
-    size: size,
-    priority: 2,
-    angle: radians(angle),
-  ) {
+    super.startAngle,
+  }) : super() {
     goalHitBox = CircleHitbox(radius: min(size.x, size.y) / 4, position: Vector2(size.x / 2, size.y * 0.7), anchor: Anchor.center);
     hitBox = PolygonHitbox(hitBoxShape.map((e) => Vector2(e.x*size.x, e.y*size.y)).toList());
   }
@@ -90,6 +83,12 @@ class BasketGoal extends BasketSprite
     current = 0;
   }
 
+  @override
+  void update(double dt) {
+    oldGlobalVertices = cloneList(hitBox.globalVertices());
+    super.update(dt);
+  }
+
   double getCoefficient(BallType ballType) {
     return coefficient[ballType]!;
   }
@@ -101,23 +100,10 @@ class BasketGoal extends BasketSprite
           BallType.metal: 0.1,
           BallType.tennis: 0.1,
         },
-        movement = Movement.fromJson(json['movement']),
-        super(position: Vector2(json['position.x'], json['position.y']),
-          size: Vector2(json['size.x'], json['size.y']),
-          angle: json['angle']) {
+        super.fromJson(json) {
     goalHitBox = CircleHitbox(radius: min(size.x, size.y) / 4, position: Vector2(size.x / 2, size.y * 0.7), anchor: Anchor.center);
     hitBox = PolygonHitbox(hitBoxShape.map((e) => Vector2(e.x*size.x, e.y*size.y)).toList());
   }
-
-  @override
-  Map<String, dynamic> toJson() => {
-    'position.x': position.x,
-    'position.y': position.y,
-    'size.x': size.x,
-    'size.y': size.y,
-    'angle': angle,
-    'movement': movement.toJson(),
-  };
 
   @override
   String getName() {

@@ -1,19 +1,28 @@
 import 'package:flame/components.dart';
 
 class LevelOptions {
-  final Vector2 gravity;
-  final double flickPower;
-  final double flickCoolDown;
-  final double flickMaximum;
-  final double airResistance;
+
+  Vector2 gravity;
+  double flickPower;
+  double flickCoolDown;
+  double flickMaximum;
+  double airResistance;
 
   LevelOptions({
     required this.gravity,
-    this.flickPower = 3,
+    this.flickPower = 100,
     this.flickCoolDown = 1,
-    this.flickMaximum = 500,
-    this.airResistance = 1,
+    this.flickMaximum = 100,
+    this.airResistance = 100,
   });
+
+  void resetToDefault() {
+    gravity = Vector2(0, 10);
+    flickPower = 100;
+    flickCoolDown = 1;
+    flickMaximum = 100;
+    airResistance = 100;
+  }
 
   LevelOptions.fromJson(Map<String, dynamic> json) :
       gravity = Vector2(json['gravity.x'], json['gravity.y']),

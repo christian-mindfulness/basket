@@ -1,3 +1,5 @@
+import 'package:basket/widgets/level_options_dialog.dart';
+import 'package:basket/widgets/text_info_dialog.dart';
 import 'package:flame/game.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -48,6 +50,8 @@ class _WorldEditorScreenState extends State<WorldEditorScreen> {
                 Widget Function(BuildContext, Game)>{
               'editorOverlay': (context, game) => EditorOverlay(game),
               'resizeOverlay': (context, game) => NewOverlay(game),
+              'levelOptionsOverlay': (context, game) => LevelOptionsOverlay(game),
+              'textInfoOverlay': (context, game) => TextInfoOverlay(game),
               'saveOverlay': (context, game) => SaveOverlay(game),
             },
           );
@@ -75,35 +79,24 @@ Widget _offsetPopup(
   List<PopupMenuItem<int>> extraItems = [
     PopupMenuItem(
       child: const Text(
-        "Change gravity",
+        "Level options",
         style: TextStyle(
             color: Colors.black, fontWeight: FontWeight.w700),
       ),
       onTap: (){
-        debugPrint('Change gravity');
-        game.showGravityDialogue();
+        debugPrint('Level options');
+        game.showLevelOptionsDialogue();
       },
     ),
     PopupMenuItem(
       child: const Text(
-        "Change flick strength",
+        "Edit information",
         style: TextStyle(
             color: Colors.black, fontWeight: FontWeight.w700),
       ),
       onTap: (){
-        debugPrint('Change flick strength');
-        debugPrint('Do nothing');
-      },
-    ),
-    PopupMenuItem(
-      child: const Text(
-        "Change flick cool down",
-        style: TextStyle(
-            color: Colors.black, fontWeight: FontWeight.w700),
-      ),
-      onTap: (){
-        debugPrint('Change flick cool down');
-        debugPrint('Do nothing');
+        debugPrint('Level information dialogue');
+        game.setLevelInformation();
       },
     ),
   ];

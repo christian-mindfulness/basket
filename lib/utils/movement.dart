@@ -5,17 +5,26 @@ class Movement {
   Vector2 position;
   double time;
   double angle;
-  Movement({required this.allow, required this.position, required this.time, required this.angle});
+  bool continuousAngle;
+  Movement({
+    required this.allow,
+    required this.position,
+    required this.time,
+    required this.angle,
+    required this.continuousAngle,
+  });
 
   void set(bool newAllow,
       Vector2 newOther,
       double newTime,
-      double newAngle) {
+      double newAngle,
+      bool newContinuous) {
     allow = newAllow;
     if (newAllow) {
       position = newOther;
       time = newTime;
       angle = newAngle;
+      continuousAngle = newContinuous;
     }
   }
 
@@ -23,13 +32,20 @@ class Movement {
       allow = json['allow'],
       position = Vector2(json['position.x'], json['position.y']),
       time = json['time'],
-      angle = json['angle'];
+      angle = json['angle'],
+      continuousAngle = json['continuousAngle'];
 
   Map<String, dynamic> toJson() => {
     'allow': allow,
     'position.x': position.x,
     'position.y': position.y,
     'time': time,
-    'angle': degrees(angle),
+    'angle': angle,
+    'continuousAngle': continuousAngle,
   };
+
+  @override
+  String toString() {
+    return 'Movement: allow=$allow, position=$position, time=$time, angle=$angle, continuousAngle=$continuousAngle';
+  }
 }

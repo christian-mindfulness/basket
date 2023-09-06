@@ -1,20 +1,6 @@
-import 'package:basket/game/world_editor.dart';
-import 'package:basket/overlays/editor_overlay.dart';
 import 'package:basket/screens/home_screen.dart';
-import 'package:basket/sprites/draggable.dart';
-import 'package:basket/widgets/resize_dialog.dart';
-import 'package:flame/components.dart';
-import 'package:flame/game.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-
-import 'game/basket_game.dart';
-import 'overlays/failed_overlay.dart';
-import 'overlays/game_overlay.dart';
-import 'screens/main_menu.dart';
-import 'overlays/save_overlay.dart';
-import 'overlays/tutorial_overlay.dart';
-import 'overlays/victory_overlay.dart';
 
 void main() {
   runApp(const MyApp());
@@ -46,5 +32,3 @@ class MyApp extends StatelessWidget {
     );
   }
 }
-
-//final Game game = BasketBall();

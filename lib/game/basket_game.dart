@@ -2,18 +2,23 @@ import 'dart:convert';
 
 import 'package:basket/managers/component_manager.dart';
 import 'package:basket/sprites/player.dart';
+import 'package:basket/utils/level_options.dart';
 import 'package:flame/components.dart';
 import 'package:flame/events.dart';
 import 'package:flame/experimental.dart';
 import 'package:flame/game.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/services.dart';
+import '../sprites/basket_sprites.dart';
 import '../sprites/enemies.dart';
 import '../sprites/goal.dart';
 import '../sprites/walls.dart';
 import '../sprites/world.dart';
 import '../utils/component_list.dart';
 import '../utils/files.dart';
+import '../utils/write_game.dart';
 import 'game_state.dart';
+import 'dart:developer';
 
 class BasketBall extends FlameGame with HasCollisionDetection, HasKeyboardHandlerComponents {
 
@@ -24,6 +29,8 @@ class BasketBall extends FlameGame with HasCollisionDetection, HasKeyboardHandle
   Vector2 worldSize = Vector2(400, 800);
   int _currentLevel = 0;
   String _currentType = 'N';
+  String _levelInfoTitle = '';
+  String _levelInfoText = '';
   late final CameraComponent cameraComponent;
   late final World world;
   ComponentList componentList = ComponentList([]);
@@ -67,11 +74,11 @@ class BasketBall extends FlameGame with HasCollisionDetection, HasKeyboardHandle
     print('LoadLevel: Level name = ${gameState.getLevelName}');
     if (levelName == '') {
       componentList.addAll([
-        WoodWall(size: Vector2(400, 10), position: Vector2(200, 5)),
-        WoodWall(size: Vector2(400, 15), position: Vector2(200, 795)),
-        BrickWall(size: Vector2(10, 800), position: Vector2(5, 400)),
-        BrickWall(size: Vector2(10, 800), position: Vector2(395, 400)),
-        BasketGoal(size: Vector2(50, 50), position: Vector2(300, 100)),
+        WoodWall(size: Vector2(400, 10), startPosition: Vector2(200, 5)),
+        WoodWall(size: Vector2(400, 15), startPosition: Vector2(200, 795)),
+        BrickWall(size: Vector2(10, 800), startPosition: Vector2(5, 400)),
+        BrickWall(size: Vector2(10, 800), startPosition: Vector2(395, 400)),
+        BasketGoal(size: Vector2(50, 50), startPosition: Vector2(300, 100)),
       ]);
       _player = Player(
           position: Vector2(200, 650),
@@ -81,42 +88,38 @@ class BasketBall extends FlameGame with HasCollisionDetection, HasKeyboardHandle
       );
       debugPrint(componentList.toString());
     } else {
-      final file = await localFile(levelName);
-      String fileString = await file.readAsString();
-      var json = jsonDecode(fileString);
-      for (Map entry in json) {
-        switch (entry['name']) {
-          case 'Wood Wall': {
-            componentList.add(WoodWall.fromJson(entry['values']));
-          }
-          break;
-          case 'Brick Wall': {
-            componentList.add(BrickWall.fromJson(entry['values']));
-          }
-          break;
-          case 'Spike': {
-            componentList.add(Spike.fromJson(entry['values']));
-          }
-          break;
-          case 'Star': {
-            componentList.add(Star.fromJson(entry['values']));
-          }
-          break;
-          case 'Goal': {
-            componentList.add(BasketGoal.fromJson(entry['values']));
-          }
-          break;
-          case 'Ball': {
-            _player = Player.fromJson(entry['values']);
-            debugPrint('Done player $_player');
-          }
-          break;
-          default: {
-            print('Entry ${entry["name"]} not recognised');
-          }
-        }
-        print(entry);
+      String fileString = '';
+      if (gameState.getIsAsset) {
+        fileString = await rootBundle.loadString('assets/levels/$levelName');
+      } else {
+        final file = await localFile(levelName);
+        fileString = await file.readAsString();
       }
+      var json = jsonDecode(fileString);
+      debugPrint('Reading game from json');
+      debugPrint(json.toString());
+      log(json.toString());
+      ReadWriteGame readWriteGame = ReadWriteGame.fromJson(json, (){}, false);
+      componentList = readWriteGame.componentList;
+      _player = componentList.getPlayer;
+      gameState.setLevelOptions(readWriteGame.levelOptions);
+      _levelInfoTitle = readWriteGame.levelInfoTitle;
+      _levelInfoText = readWriteGame.levelInfoText;
+
+      // Add all of the newly generated components to the world
+      for (BasketSprite entry in componentList.getList()) {
+        world.add(entry);
+      }
+      world.add(_player);
+    }
+    if (_levelInfoText == '') {
+      overlays.removeAll(['mainMenu', 'failedOverlay', 'victoryOverlay', 'informationOverlay']);
+      overlays.add('gameOverlay');
+      unPause();
+    } else {
+      overlays.removeAll(['mainMenu', 'gameOverlay', 'failedOverlay', 'victoryOverlay']);
+      overlays.add('informationOverlay');
+      pause();
     }
   }
 
@@ -137,13 +140,18 @@ class BasketBall extends FlameGame with HasCollisionDetection, HasKeyboardHandle
     unPause();
   }
 
+  void clearInformationOverlay() {
+    overlays.removeAll(['failedOverlay', 'victoryOverlay', 'informationOverlay', 'mainMenu']);
+    overlays.add('gameOverlay');
+    unPause();
+  }
+
   void setLevel(int level, {String type='N'}) {
     _currentLevel = level;
     _currentType = type;
     print('Set level $type-$level');
     componentManager.clean();
     componentManager.setLevel(level, type);
-    _player.resetPosition();
     if (type == 'T') {
       overlays.removeAll(['mainMenu', 'gameOverlay', 'failedOverlay', 'victoryOverlay']);
       overlays.add('tutorialOverlay');
@@ -158,6 +166,12 @@ class BasketBall extends FlameGame with HasCollisionDetection, HasKeyboardHandle
   int getLevel() {
     return _currentLevel;
   }
+
+  String get getLevelInfoTitle => _levelInfoTitle;
+
+  String get getLevelInfoText => _levelInfoText;
+
+  LevelOptions get getLevelOptions => gameState.getLevelOptions;
 
   String getType() {
     return _currentType;
@@ -190,15 +204,11 @@ class BasketBall extends FlameGame with HasCollisionDetection, HasKeyboardHandle
   }
 
   void pause() {
-    if (! paused) {
-      togglePauseState();
-    }
+    pauseEngine();
   }
 
   void unPause() {
-    if (paused) {
-      togglePauseState();
-    }
+    resumeEngine();
   }
 
   bool isPaused() {return paused;}
@@ -212,6 +222,7 @@ class BasketBall extends FlameGame with HasCollisionDetection, HasKeyboardHandle
   }
 
   void quit() {
+    pauseEngine();
     gameState.exitCallback();
   }
 }

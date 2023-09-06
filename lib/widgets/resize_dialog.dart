@@ -86,9 +86,7 @@ class _NewOverlayState extends State<NewOverlay> {
                       ),
                     ],),
                   padding: const EdgeInsets.all(20),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    crossAxisAlignment: CrossAxisAlignment.center,
+                  child: ListView(
                     children: getWidgetList((widget.game as WorldEditorGame).getOperations()),
                   ),
                 ),
@@ -137,7 +135,7 @@ class _NewOverlayState extends State<NewOverlay> {
           ),
           GestureDetector(
             onTap: () {
-              print('Reset size $initialSize');
+              debugPrint('Reset size $initialSize');
               (widget.game as WorldEditorGame).setSize(initialSize);
               (widget.game as WorldEditorGame).setAngle(initialAngle);
               (widget.game as WorldEditorGame).setBallType(initialBallType);
@@ -163,7 +161,7 @@ class _NewOverlayState extends State<NewOverlay> {
           onChanged: (double value) {
             setState(() {
               angle = value;
-              (widget.game as WorldEditorGame).setAngle(pi * value / 180);
+              (widget.game as WorldEditorGame).setAngle(value);
             });
           }),
     ];
@@ -181,10 +179,8 @@ class _NewOverlayState extends State<NewOverlay> {
             (widget.game as WorldEditorGame).setMovement(movement);
           });
         },),
-      movement.allow ? Text('Start position: ${(widget.game as WorldEditorGame).currentComp.position.x.toInt()}, ${(widget.game as WorldEditorGame).currentComp.position.y.toInt()}') :
-        const SizedBox.shrink(),
       movement.allow ? Row(children: [
-        const Text('End position: '),
+        const Text('Position change: '),
         SizedBox(
           width: 50,
           child: TextFormField(
@@ -212,22 +208,7 @@ class _NewOverlayState extends State<NewOverlay> {
             },),),
         ],)
         : const SizedBox.shrink(),
-      movement.allow ? Row(children: [
-        Text('Start angle: ${angle.toInt()}  End angle: '),
-        SizedBox(
-          width: 50,
-          child: TextFormField(
-            initialValue: movement.angle.toInt().toString(),
-            keyboardType: TextInputType.number,
-            inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-            onChanged: (String? value){
-              setState(() {
-                movement.angle = radians(double.parse(value!));
-                (widget.game as WorldEditorGame).setMovement(movement);
-              });
-            },),),
-      ],) :
-      const SizedBox.shrink(),
+      getMovementAngleWidget(),
       movement.allow ? Row(children: [
         const Text('Time taken: '),
         SizedBox(
@@ -261,7 +242,7 @@ class _NewOverlayState extends State<NewOverlay> {
           DropdownMenuItem(value: BallType.metal, child: Text(ballNames[BallType.metal]!),),
           DropdownMenuItem(value: BallType.beach, child: Text(ballNames[BallType.beach]!),),
         ], onChanged: (BallType? type){
-          print('Chosen $type');
+          debugPrint('Chosen $type');
           (widget.game as WorldEditorGame).setBallType(type!);
           setState(() {
             ballType = type;
@@ -277,8 +258,8 @@ class _NewOverlayState extends State<NewOverlay> {
         style: const TextStyle(color: Colors.blue),),
       Slider(
           value: sizeX,
-          max: 800,
-          divisions: 80,
+          max: 400,
+          divisions: 40,
           onChanged: (double value) {
             setState(() {
               sizeX = max(value, 10);
@@ -291,8 +272,8 @@ class _NewOverlayState extends State<NewOverlay> {
         style: const TextStyle(color: Colors.blue),),
       Slider(
           value: sizeY,
-          max: 800,
-          divisions: 80,
+          max: 400,
+          divisions: 40,
           onChanged: (double value) {
             setState(() {
               sizeY = max(value, 10);
@@ -319,7 +300,90 @@ class _NewOverlayState extends State<NewOverlay> {
       ),
     );
   }
+
+  Widget getMovementAngleWidget() {
+    if (movement.allow) {
+      if (movement.continuousAngle) {
+        return Column(children: [
+          getRotationHeader(),
+          Row(children: [
+            const Text('Angle change: '),
+            SizedBox(
+            width: 50,
+            child: TextFormField(
+              initialValue: degrees(movement.angle).toInt().toString(),
+              keyboardType: TextInputType.number,
+              inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'[-+]?\d*'))],
+              onChanged: (String? value){
+                setState(() {
+                  movement.angle = radians(double.parse(value!));
+                  (widget.game as WorldEditorGame).setMovement(movement);
+                });
+              },),),
+            const Text('deg/s'),
+          ],),
+        ],);
+      } else {
+        return Column(children: [
+          getRotationHeader(),
+          Row(children: [
+            const Text('Angle change: '),
+            SizedBox(
+              width: 50,
+              child: TextFormField(
+                initialValue: degrees(movement.angle).toInt().toString(),
+                keyboardType: TextInputType.number,
+                inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                onChanged: (String? value){
+                  setState(() {
+                    movement.angle = radians(double.parse(value!));
+                    (widget.game as WorldEditorGame).setMovement(movement);
+                  });
+                },),),
+          ],),
+        ],);
+      }
+    } else {
+      return const SizedBox.shrink();
+    }
+  }
+
+  Widget getRotationHeader() {
+    return Row(children: [
+      Radio<bool>(
+        value: true,
+        groupValue: movement.continuousAngle,
+        onChanged: (bool? value) {
+          setState(() {
+            movement.continuousAngle = true;
+          });
+        },
+      ),
+      GestureDetector(
+        child: const Text('Continuous'),
+        onTap: (){
+          setState(() {
+            movement.continuousAngle = true;
+          });
+        },
+      ),
+      Radio<bool>(
+        value: false,
+        groupValue: movement.continuousAngle,
+        onChanged: (bool? value) {
+          setState(() {
+            movement.continuousAngle = false;
+          });
+        },
+      ),
+      GestureDetector(
+        child: const Text('Back & forth'),
+        onTap: (){
+          setState(() {
+            movement.continuousAngle = false;
+          });
+        },
+      ),
+    ],);
+  }
 }
-
-
-
