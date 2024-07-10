@@ -145,7 +145,7 @@ class Player extends BasketSprite with HasGameRef, KeyboardHandler, CollisionCal
   }
 
   @override
-  bool onKeyEvent(RawKeyEvent event, Set<LogicalKeyboardKey> keysPressed) {
+  bool onKeyEvent(KeyEvent event, Set<LogicalKeyboardKey> keysPressed) {
     if (keysPressed.contains(LogicalKeyboardKey.arrowLeft)) {
       _velocity += Vector2(-_kickScale, 0);
     }
