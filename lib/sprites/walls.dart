@@ -1,9 +1,17 @@
 import 'package:basket/sprites/basket_sprites.dart';
 import 'package:basket/sprites/player.dart';
+// import 'package:basket/utils/crop_image.dart';
 import 'package:flame/collisions.dart';
 import 'package:flame/components.dart';
+//import 'package:flame/extensions.dart';
+//import 'package:flutter/cupertino.dart';
+//import 'package:flutter/services.dart';
+//import 'package:image/image.dart' as img;
+//import 'dart:io';
+import 'dart:ui';
 
 import '../utils/clone_list.dart';
+import '../utils/crop_image.dart';
 
 class Wall extends MovementSprite
     with CollisionCallbacks {
@@ -56,20 +64,34 @@ class Wall extends MovementSprite
 }
 
 
-class BrickWall extends Wall {
+class BrickWall extends Wall with HasGameRef {
   BrickWall({
     required super.startPosition,
     required super.size,
     super.startAngle,
   });
 
+  // late ByteData imageBytes;
+  // late img.Image fullImage;
+  late Image brickWall;
+
   @override
   Future<void>? onLoad() async {
     await super.onLoad();
-    var wall = await Sprite.load('game/brick_wall.png');
-    sprites = <int, Sprite>{0: wall};
+    brickWall = await gameRef.images.load('game/large_brick_wall.png');
+    // imageBytes = await rootBundle.load('assets/images/game/large_brick_wall.png');
+    // fullImage = img.decodePng(imageBytes.buffer.asUint8List())!;
+    sprites = {
+      0: Sprite(brickWall, srcSize: size)
+    };
     current = 0;
+    size.addListener(() async {
+      sprites = {
+        0: Sprite(brickWall, srcSize: size)
+      };
+    });
   }
+
 
   @override
   double getCoefficient (BallType ballType) {
@@ -90,19 +112,33 @@ class BrickWall extends Wall {
   }
 }
 
-class WoodWall extends Wall {
+class WoodWall extends Wall with HasGameRef {
   WoodWall({
     required super.startPosition,
     required super.size,
     super.startAngle,
   });
 
+  // late ByteData imageBytes;
+  // late img.Image fullImage;
+  late Image woodWall;
+
   @override
   Future<void>? onLoad() async {
     await super.onLoad();
-    var wall = await Sprite.load('game/wood_wall.png');
-    sprites = <int, Sprite>{0: wall};
+    woodWall = await gameRef.images.load('game/large_wood_wall.png');
+    sprites = {0: Sprite(woodWall, srcSize: size)};
     current = 0;
+    size.addListener(() async {
+      sprites = {0: Sprite(woodWall, srcSize: size)};
+    });
+    // imageBytes = await rootBundle.load('assets/images/game/large_wood_wall.png');
+    // fullImage = img.decodePng(imageBytes.buffer.asUint8List())!;
+    // sprites = await cropImage(fullImage, size*2);
+    // current = 0;
+    // size.addListener(() async {
+    //   sprites = await cropImage(fullImage, size*2);
+    // });
   }
 
   @override
@@ -123,19 +159,34 @@ class WoodWall extends Wall {
   }
 }
 
-class Slime extends Wall {
+class Slime extends Wall with HasGameRef {
   Slime({
     required super.startPosition,
     required super.size,
     super.startAngle,
   });
 
+  // late ByteData imageBytes;
+  // late img.Image fullImage;
+  late Image slime;
+
   @override
   Future<void>? onLoad() async {
     await super.onLoad();
-    var wall = await Sprite.load('game/slime.png');
-    sprites = <int, Sprite>{0: wall};
+    slime = await gameRef.images.load('game/large_slime.png');
+    sprites = {0: Sprite(slime, srcSize: size)};
     current = 0;
+    size.addListener(() async {
+      sprites = {0: Sprite(slime, srcSize: size)};
+    });
+    // imageBytes = await rootBundle.load('assets/images/game/large_slime.png');
+    // fullImage = img.decodePng(imageBytes.buffer.asUint8List())!;
+    // sprites = await cropImage(fullImage, size*2);
+    // current = 0;
+    // size.addListener(() async {
+    //   debugPrint('Slime resize: ${fullImage.width} ${fullImage.height}');
+    //   sprites = await cropImage(fullImage, size*2);
+    // });
   }
 
   @override
@@ -192,19 +243,33 @@ class Trampoline extends Wall {
 }
 
 
-class OneWayPlatform extends Wall {
+class OneWayPlatform extends Wall with HasGameRef {
   OneWayPlatform({
     required super.startPosition,
     required super.size,
     super.startAngle,
   });
 
+  // late ByteData imageBytes;
+  // late img.Image fullImage;
+  late Image oneWay;
+
   @override
   Future<void>? onLoad() async {
     await super.onLoad();
-    var wall = await Sprite.load('game/one_way_platform.png');
-    sprites = <int, Sprite>{0: wall};
+    oneWay = await gameRef.images.load('game/large_one_way.png');
+    sprites = {0: Sprite(oneWay, srcSize: size)};
     current = 0;
+    size.addListener(() async {
+      sprites = {0: Sprite(oneWay, srcSize: size)};
+    });
+    // imageBytes = await rootBundle.load('assets/images/game/large_one_way.png');
+    // fullImage = img.decodePng(imageBytes.buffer.asUint8List())!;
+    // sprites = await cropImage(fullImage, size*2);
+    // current = 0;
+    // size.addListener(() async {
+    //   sprites = await cropImage(fullImage, size*2);
+    // });
   }
 
   OneWayPlatform.fromJson(Map<String, dynamic> json) : super.fromJson(json);

@@ -123,7 +123,11 @@ class BasketBall extends FlameGame with HasCollisionDetection, HasKeyboardHandle
     }
   }
 
-
+  // @override
+  // void update(double dt) {
+  //   super.update(dt);
+  //   _player.resolveCollisions();
+  // }
   void mainMenu() {
     overlays.removeAll(['failedOverlay', 'victoryOverlay', 'gameOverlay', 'tutorialOverlay']);
     overlays.add('mainMenu');
@@ -178,7 +182,16 @@ class BasketBall extends FlameGame with HasCollisionDetection, HasKeyboardHandle
   }
 
   void nextLevel() {
-    setLevel(_currentLevel + 1);
+    String levelName = gameState.getLevelName;
+    int levelNumber = int.parse(levelName.substring(5, 8)) + 1;
+    for (var component in componentList.getList()) {
+      world.remove(component);
+    }
+    componentList.clean();
+    world.remove(_player);
+    componentList.remove(_player);
+    gameState.setLevel(name: 'Level${levelNumber.toString().padLeft(3, '0')}.json');
+    _loadLevel(gameState.getLevelName);
   }
 
   void replayLevel() {

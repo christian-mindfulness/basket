@@ -13,7 +13,7 @@ class BackgroundImage extends SpriteComponent with HasGameRef {
 
   @override
   Future<void>? onLoad() async {
-    sprite = await Sprite.load('green_background.png');
+    sprite = await Sprite.load('sports_hall.png');
     debugPrint(size.toString());
     debugPrint(position.toString());
     return super.onLoad();

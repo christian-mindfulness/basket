@@ -28,8 +28,8 @@ class HomeScreen extends StatelessWidget {
                   fontSize: 33,
                 ),
               ),
-              MyElevatedButton(
-                  onPressed: () {
+              BigCircle(
+                onPressed: () {
                     debugPrint('Pressed select level');
                     Navigator.push(
                       context,
@@ -39,10 +39,12 @@ class HomeScreen extends StatelessWidget {
                       ),
                     );
                   },
-                  text: 'Select level'
+                text: 'Select level',
+                backgroundColor: Colors.deepPurple,
+                size: 150,
               ),
-              MyElevatedButton(
-                  onPressed: (){
+              BigCircle(
+                onPressed: (){
                     Navigator.push(
                         context,
                         MaterialPageRoute(
@@ -51,13 +53,17 @@ class HomeScreen extends StatelessWidget {
                         ),
                     );
                   },
-                  text: 'Level designer',
+                text: 'Level designer',
+                backgroundColor: Colors.indigoAccent,
+                size: 150,
               ),
-              MyElevatedButton(
-                  onPressed: (){
-                    print('Pressed credits');
-                  },
-                  text: 'Credits'
+              BigCircle(
+                onPressed: (){
+                  print('Pressed credits');
+                },
+                text: 'Credits',
+                backgroundColor: Colors.indigo,
+                size: 150,
               ),
             ],
           ),

@@ -1,5 +1,6 @@
 import 'package:basket/screens/play_level_screen.dart';
 import 'package:basket/widgets/number_in_circle.dart';
+import 'package:basket/widgets/select_level.dart';
 import 'package:flutter/material.dart';
 
 class ChooseLevelScreen extends StatefulWidget {
@@ -13,62 +14,41 @@ class _ChooseLevelScreenState extends State<ChooseLevelScreen> {
   List<String> fNames = [];
   final int startLevel = 1;
   final int endLevel = 12;
+  final _controller = PageController(initialPage: 0);
 
   @override
   void initState() {
     super.initState();
   }
 
-  List<Widget> getLevelList () {
-    List<int> levelNumbers = List.generate(endLevel - startLevel + 1, (index) => startLevel + index);
-    return levelNumbers.map((element) => GestureDetector(
-        onTap: (){
-          debugPrint('Button $element tapped');
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) =>
-                  PlayLevelScreen(
-                    levelName: 'Level${element.toString().padLeft(3, '0')}.json',
-                    isAsset: true,
-                  ),
-            ),
-          );
-        },
-        child: NumberCircle(
-          size: 50,
-          number: element,
-          color: Colors.red,
-        ),
-      ),
-    ).toList();
-  }
-
   @override
   Widget build(BuildContext context) {
-    return Scaffold(body:
-      Center(
-        child: Column(
-          children: [
-            const Text(
-              'Choose level',
-              style: TextStyle(
-                fontSize: 24,
-                color: Colors.deepPurple,
-              ),
+    final PageController controller = PageController();
+    return Scaffold(
+      body: SafeArea(
+        child: PageView(
+          /// [PageView.scrollDirection] defaults to [Axis.horizontal].
+          /// Use [Axis.vertical] to scroll vertically.
+          controller: controller,
+          children: const <Widget>[
+            Center(
+              child: SelectLevel(startLevel: 1, endLevel: 12),
             ),
-            SizedBox(
-              height: 400,
-              width: 300,
-              child: GridView.count(
-                childAspectRatio: 1,
-                crossAxisCount: 3,
-                children: getLevelList(),
-              ),
+            Center(
+              child: SelectLevel(startLevel: 13, endLevel: 24),
             ),
-          ]
+            Center(
+              child: SelectLevel(startLevel: 25, endLevel: 36),
+            ),
+          ],
         ),
       ),
     );
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
   }
 }

@@ -3,6 +3,13 @@ import 'package:flutter/cupertino.dart';
 
 import '../utils/level_options.dart';
 
+enum LevelState {
+  locked,
+  unlocked,
+  completed,
+  starred,
+}
+
 class GameState {
   static final GameState _instance = GameState._internal();
 

@@ -10,6 +10,8 @@ import 'package:basket/sprites/walls.dart';
 import 'package:basket/utils/time_and_velocity.dart';
 import 'package:flame/collisions.dart';
 import 'package:flame/components.dart';
+// import 'package:flame_audio/flame_audio.dart';
+// import 'package:flame_audio/flame_audio.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/services.dart';
 
@@ -53,6 +55,7 @@ Map<BallType, double> dragCoefficient = {
 class Player extends BasketSprite with HasGameRef, KeyboardHandler, CollisionCallbacks {
   final BallType type;
   final bool initialized;
+  List<PositionComponent> collisionComponents = [];
 
   Player({
     required super.position,
@@ -72,11 +75,12 @@ class Player extends BasketSprite with HasGameRef, KeyboardHandler, CollisionCal
   final CircleHitbox _hitBox;
   bool pauseNextTick = false;
   double saveDT = 0.01;
+  // bool _collisionsAdded = false;
 
   @override
   Future<void> onLoad() async {
     super.onLoad();
-    var basket = await Sprite.load('basket_ball.png');
+    var basket = await Sprite.load('basketball-real.png');
     var beach = await Sprite.load('beach_ball.png');
     var metal = await Sprite.load('metal_ball.png');
     var tennis = await Sprite.load('tennis_ball.png');
@@ -90,10 +94,30 @@ class Player extends BasketSprite with HasGameRef, KeyboardHandler, CollisionCal
     size = Vector2(ballSizes[current]!.toDouble(), ballSizes[current]!.toDouble());
     oldPosition = position;
     await add(_hitBox);
+    (game as HasCollisionDetection).collisionDetection.collisionsCompletedNotifier.addListener(() {
+      resolveCollisions();
+    });
   }
 
   @override
   void update(double dt) {
+    // if (! _collisionsAdded) {
+    //   _hitBox.collisionsCompleted?.addListener(() {
+    //     _collisionsAdded = true;
+    //     print('Completed');
+    //   });
+    // }
+    // if (collisionComponents.isNotEmpty) {
+    //   PositionComponent? thisOther = findCollisionTimes(collisionComponents, dt);
+    //   if (thisOther != null) {
+    //     Vector2 velocityChange = myCollision(thisOther);
+    //     double volume = min(1, velocityChange.length / 2000);
+    //     // if (volume > 0.01) {
+    //     //   FlameAudio.play('sound_effects/basketball_bounce.mp3', volume: volume);
+    //     // }
+    //   }
+    //   collisionComponents.clear();
+    // }
     saveDT = dt;
     Vector2 velocityBefore = Vector2(_velocity.x, _velocity.y);
     _velocity += (game as BasketBall).getLevelOptions.gravity;
@@ -155,16 +179,122 @@ class Player extends BasketSprite with HasGameRef, KeyboardHandler, CollisionCal
     'ball_type': ballNames[current],
   };
 
+  void resolveCollisions() {
+    if (collisionComponents.isNotEmpty) {
+      PositionComponent? thisOther = findCollisionTimes(collisionComponents, saveDT);
+      if (thisOther != null) {
+        Vector2 velocityChange = myCollision(thisOther);
+        double volume = min(1, velocityChange.length / 2000);
+        // if (volume > 0.01) {
+        //   FlameAudio.play('sound_effects/basketball_bounce.mp3', volume: volume);
+        // }
+      }
+      collisionComponents.clear();
+    }
+  }
+
   @override
   void onCollision(Set<Vector2> intersectionPoints, PositionComponent other) {
+    //print('onCollision running for $other');
+    collisionComponents.add(other);
     super.onCollision(intersectionPoints, other);
+    //print('onCollision completed');
+  }
 
+  PositionComponent? findCollisionTimes(List<PositionComponent> componentList, double dt) {
+    double minTime = 1.0E10;
+    PositionComponent result = PositionComponent();
+    for (PositionComponent other in componentList) {
+      if (other is MyCircle) {
+        double startDistance = oldPosition.distanceTo(other.absoluteCenter);
+        double endDistance = position.distanceTo(other.absoluteCenter);
+        double thisTime = calcTime(startDistance, endDistance, _radius + other.getRadius());
+        if (thisTime < minTime) {
+          minTime = thisTime;
+          result = other;
+        }
+      } else if (other is OneWayPlatform) {
+        if (_velocity.dot((game as BasketBall).getLevelOptions.gravity) > 0) {
+          // The one-way platform only accepts collisions with the top edge
+          List<int> topCorners = findTopEdge(other.hitBox.globalVertices());
+          List<Vector2> newCorners = [
+            other.hitBox.globalVertices()[topCorners[1]],
+            other.hitBox.globalVertices()[topCorners[0]]
+          ];
+          List<Vector2> oldCorners = [
+            other.oldGlobalVertices[topCorners[1]],
+            other.oldGlobalVertices[topCorners[0]]
+          ];
+          double thisTime = minCollisionTime(newCorners, oldCorners, dt);
+          if (thisTime < minTime) {
+            minTime = thisTime;
+            result = other;
+          }
+        }
+      } else if (other is Spike) {
+        var corners = other.hitBox.globalVertices();
+        var oldCorners = other.oldGlobalVertices;
+        double thisTime = minCollisionTime(corners, oldCorners, dt);
+        if (thisTime < minTime) {
+          minTime = thisTime;
+          result = other;
+        }
+      } else if (other is Star) {
+        var corners = other.hitBox.globalVertices();
+        var oldCorners = other.oldGlobalVertices;
+        double thisTime = minCollisionTime(corners, oldCorners, dt);
+        if (thisTime < minTime) {
+          minTime = thisTime;
+          result = other;
+        }
+      } else if (other is Wall) {
+        var corners = other.hitBox.globalVertices();
+        var oldCorners = other.oldGlobalVertices;
+        double thisTime = minCollisionTime(corners, oldCorners, dt);
+        if (thisTime < minTime) {
+          minTime = thisTime;
+          result = other;
+        }
+      } else if (other is BasketGoal && _hitBox.collidingWith(other.hitBox)) {
+        var corners = other.hitBox.globalVertices();
+        var oldCorners = other.oldGlobalVertices;
+        double thisTime = minCollisionTime(corners, oldCorners, dt);
+        if (thisTime < minTime) {
+          minTime = thisTime;
+          result = other;
+        }
+      }
+    }
+    if (minTime > 9.0E9) {
+      return null;
+    } else {
+      return result;
+    }
+  }
+
+  double minCollisionTime(corners, oldCorners, dt) {
+    TimeAndVelocity thisTime;
+    double minTime = 1.0E10;
+    for (int i=0; i<corners.length; i++) {
+      thisTime = collisionTimeLine(oldPosition, position,
+          oldCorners[i], oldCorners[(i+1) % oldCorners.length],
+          corners[i], corners[(i+1) % corners.length], _radius, dt);
+      if (thisTime.time < minTime) {
+        minTime = thisTime.time;
+      }
+      thisTime = collisionTimeCorner(oldPosition, absoluteCenter,
+          oldCorners[i], corners[i], _radius, dt);
+      if (thisTime.time < minTime) {
+        minTime = thisTime.time;
+      }
+    }
+    return minTime;
+  }
+
+  Vector2 myCollision(PositionComponent other) {
     debugPrint('Collision with $other');
-    // for (Vector2 point in intersectionPoints) {
-    //   print('Collision points $point');
-    // }
-
     double coefficient;
+    Vector2 velocityChange = Vector2(0, 0);
     if (other is OneWayPlatform) {
       debugPrint('Other should be one-way $other');
       if (_velocity.dot((game as BasketBall).getLevelOptions.gravity) > 0) {
@@ -175,7 +305,7 @@ class Player extends BasketSprite with HasGameRef, KeyboardHandler, CollisionCal
         List<int> topCorners = findTopEdge(other.hitBox.globalVertices());
         List<Vector2> newCorners = [other.hitBox.globalVertices()[topCorners[1]], other.hitBox.globalVertices()[topCorners[0]]];
         List<Vector2> oldCorners = [other.oldGlobalVertices[topCorners[1]], other.oldGlobalVertices[topCorners[0]]];
-        polygonCollision(
+        velocityChange = polygonCollision(
             other, newCorners, oldCorners,
             [false, false, false, false],
             other.getCoefficient(current), other.localDT,
@@ -186,7 +316,7 @@ class Player extends BasketSprite with HasGameRef, KeyboardHandler, CollisionCal
     } else if (other is Wall) {
       coefficient = other.getCoefficient(current);
       debugPrint('Calling with $coefficient');
-      polygonCollision(
+      velocityChange = polygonCollision(
           other, other.hitBox.globalVertices(), other.oldGlobalVertices,
           [false, false, false, false],
           other.getCoefficient(current), other.localDT);
@@ -194,16 +324,16 @@ class Player extends BasketSprite with HasGameRef, KeyboardHandler, CollisionCal
       debugPrint('${other.hitBox.globalVertices()}');
     } else if (other is MyCircle) {
       coefficient = other.getCoefficient();
-      circleCollision(other, coefficient);
+      velocityChange = circleCollision(other, coefficient);
     } else if (other is Spike) {
-      polygonCollision(
+      velocityChange = polygonCollision(
           other, other.hitBox.globalVertices(), other.hitBox.globalVertices(),
           other.deadlyVertices, other.getCoefficient(current),
           0.01);
       debugPrint('Absolute centre = ${other.absoluteCenter}');
       debugPrint('${other.hitBox.globalVertices()}');
     } else if (other is Star) {
-      polygonCollision(
+      velocityChange = polygonCollision(
           other, other.hitBox.globalVertices(), other.hitBox.globalVertices(),
           other.deadlyVertices, other.getCoefficient(current), 0.01);
       debugPrint('Absolute centre = ${other.absoluteCenter}');
@@ -212,7 +342,7 @@ class Player extends BasketSprite with HasGameRef, KeyboardHandler, CollisionCal
       if (_hitBox.collidingWith(other.goalHitBox)) {
         (game as BasketBall).victory();
       }
-      polygonCollision(
+      velocityChange = polygonCollision(
           other, other.hitBox.globalVertices(), other.hitBox.globalVertices(),
           other.deadlyVertices, other.getCoefficient(current), 0.01);
     } else if (other is Background) {
@@ -222,17 +352,20 @@ class Player extends BasketSprite with HasGameRef, KeyboardHandler, CollisionCal
       throw Exception('I should not be here');
       //rectangleCollision(other, coefficient);
     }
+    return velocityChange;
   }
 
-  void circleCollision(MyCircle other, double coefficient) {
+  Vector2 circleCollision(MyCircle other, double coefficient) {
     double startDistance = oldPosition.distanceTo(other.absoluteCenter);
     double endDistance = position.distanceTo(other.absoluteCenter);
     double collisionTime = calcTime(startDistance, endDistance, _radius + other.getRadius());
     Vector2 location = collisionLocation(collisionTime, oldPosition, position);
     Vector2 normal = (other.absoluteCenter - location).normalized();
     debugPrint('Normal: $normal');
+    Vector2 velocityBefore = Vector2(_velocity.x, _velocity.y);
     _velocity = reflect(_velocity, normal, coefficient);
     position = location + _velocity.normalized() * (1-collisionTime) * (position.distanceTo(oldPosition));
+    return _velocity - velocityBefore;
   }
 
   // void rectangleCollision(PositionComponent other, double coefficient) {
@@ -309,7 +442,14 @@ class Player extends BasketSprite with HasGameRef, KeyboardHandler, CollisionCal
   //   }
   // }
 
-  void polygonCollision(
+  // @override
+  // void onCollisionsCompleted() {
+  //   resolveCollisions();
+  //   super.onCollisionsCompleted();
+  //   debugPrint('Hello from completed');
+  // }
+  //
+  Vector2 polygonCollision(
       PositionComponent other,
       List<Vector2> corners,
       List<Vector2> oldCorners,
@@ -351,6 +491,7 @@ class Player extends BasketSprite with HasGameRef, KeyboardHandler, CollisionCal
       colTime = max(colTime, 0);
     }
 
+    Vector2 velocityChange = Vector2(0, 0);
     if (colIndex >= 0) {
       Vector2 location = collisionLocation(colTime, oldPosition, absoluteCenter);
       debugPrint('Collision location: $location');
@@ -374,24 +515,28 @@ class Player extends BasketSprite with HasGameRef, KeyboardHandler, CollisionCal
         tangent = tangent.normalized();
         debugPrint('Actual corner');
         if (deadlyVertices[-1+(colIndex+1)~/2]) {
+          // FlameAudio.play('sound_effects/balloon_burst.mp3');
           (game as BasketBall).failed();
         }
       }
       // We treat the "other" object as having infinite mass, so we treat it as a
       // frame of reference, subtracting and adding back this reference velocity.
       // debugPrint('Position before $position');
+      Vector2 velocityBefore = Vector2(_velocity.x, _velocity.y);
       debugPrint('Velocity before: $_velocity  $otherVelocity');
       _velocity = applyTangent(
           reflect(_velocity - otherVelocity, normal, coefficient),
           tangent,
           0.8
       ) + otherVelocity;
+      velocityChange = _velocity - velocityBefore;
       position = location + _velocity * saveDT * (1-colTime);
       debugPrint('Position after: $position');
       debugPrint('Velocity after: $_velocity');
     } else {
       debugPrint('No collision');
     }
+    return velocityChange;
   }
 
   List<int> findTopEdge(List<Vector2> corners) {

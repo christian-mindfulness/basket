@@ -8,6 +8,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import '../utils/movement.dart';
+import '../utils/number_formatter.dart';
 
 class ResizeOverlay extends StatelessWidget {
   const ResizeOverlay(this.game, {super.key});
@@ -186,7 +187,9 @@ class _NewOverlayState extends State<NewOverlay> {
           child: TextFormField(
             initialValue: movement.position.x.toInt().toString(),
             keyboardType: TextInputType.number,
-            inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+            inputFormatters: [
+              TextInputFormatter.withFunction((oldV, newV) => floatsOnly(oldV, newV)),
+            ],
             onChanged: (String? value){
               setState(() {
                 movement.position.x = int.parse(value!).toDouble();
@@ -199,7 +202,9 @@ class _NewOverlayState extends State<NewOverlay> {
           child: TextFormField(
             initialValue: movement.position.y.toInt().toString(),
             keyboardType: TextInputType.number,
-            inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+            inputFormatters: [
+              TextInputFormatter.withFunction((oldV, newV) => floatsOnly(oldV, newV)),
+            ],
             onChanged: (String? value){
               setState(() {
                 movement.position.y = int.parse(value!).toDouble();
@@ -216,7 +221,9 @@ class _NewOverlayState extends State<NewOverlay> {
           child: TextFormField(
             initialValue: movement.time.toString(),
             keyboardType: TextInputType.number,
-            inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r"[\d.]"))],
+            inputFormatters: [
+              TextInputFormatter.withFunction((oldV, newV) => positiveFloats(oldV, newV)),
+            ],
             onChanged: (String? value){
               setState(() {
                 movement.time = double.parse(value!);
@@ -272,8 +279,8 @@ class _NewOverlayState extends State<NewOverlay> {
         style: const TextStyle(color: Colors.blue),),
       Slider(
           value: sizeY,
-          max: 400,
-          divisions: 40,
+          max: 800,
+          divisions: 80,
           onChanged: (double value) {
             setState(() {
               sizeY = max(value, 10);

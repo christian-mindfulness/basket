@@ -20,21 +20,30 @@ class MainMenu extends StatelessWidget {
         const Text('Basket',
         style: TextStyle(fontSize: 24,
         color: Colors.black),),
-        MyElevatedButton(
-            onPressed: (){
-              (game as BasketBall).setLevel(1, type: 'T');
-              },
-            text: 'Tutorial'),
-        MyElevatedButton(
-            onPressed: (){
-              (game as BasketBall).setLevel(1);
-              },
-            text: 'Level 1'),
-        MyElevatedButton(
-            onPressed: (){
-              (game as BasketBall).setLevel(2);
-              },
-            text: 'Level 2'),
+        BigCircle(
+          onPressed: (){
+            (game as BasketBall).setLevel(1, type: 'T');
+            },
+          text: 'Tutorial',
+          backgroundColor: Colors.deepPurple,
+          size: 150,
+        ),
+        BigCircle(
+          onPressed: (){
+            (game as BasketBall).setLevel(1);
+          },
+          text: 'Level 1',
+          backgroundColor: Colors.deepPurple,
+          size: 150,
+        ),
+        BigCircle(
+          onPressed: (){
+            (game as BasketBall).setLevel(2);
+          },
+          text: 'Level 2',
+          backgroundColor: Colors.deepPurple,
+          size: 150,
+        ),
       ],
     ),),);
   }

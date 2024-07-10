@@ -5,6 +5,7 @@ import 'package:basket/sprites/goal.dart';
 import 'package:basket/sprites/player.dart';
 import 'package:basket/sprites/basket_sprites.dart';
 import 'package:flame/components.dart';
+import 'package:flame/events.dart';
 import 'package:flame/experimental.dart';
 import 'package:flutter/cupertino.dart';
 import '../utils/ball_type.dart';

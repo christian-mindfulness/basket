@@ -37,7 +37,7 @@ enum Operations {
   movement,
 }
 
-class WorldEditorGame extends FlameGame with HasDraggableComponents, HasTappableComponents {
+class WorldEditorGame extends FlameGame {
   late BasketSprite currentComp;
   final BackgroundImage _backgroundImage = BackgroundImage();
   late final CameraComponent cameraComponent;
@@ -77,10 +77,10 @@ class WorldEditorGame extends FlameGame with HasDraggableComponents, HasTappable
     if (levelName == '') {
       componentList.addAll([
         DragWoodWall(size: Vector2(400, 10), startPosition: Vector2(200, 5), showResize: showResize),
-        DragWoodWall(size: Vector2(400, 15), startPosition: Vector2(200, 795), showResize: showResize),
+        DragWoodWall(size: Vector2(400, 10), startPosition: Vector2(200, 795), showResize: showResize),
         DragBrickWall(size: Vector2(10, 800), startPosition: Vector2(5, 400), showResize: showResize),
         DragBrickWall(size: Vector2(10, 800), startPosition: Vector2(395, 400), showResize: showResize),
-        DragBasket(size: Vector2(50, 50), startPosition: Vector2(300, 100), showResize: showResize),
+        DragBasket(size: Vector2(110, 90), startPosition: Vector2(300, 100), showResize: showResize),
         DragBall(position: Vector2(200, 650), size: Vector2(30, 30), type: BallType.basket, showResize: showResize),
       ]);
     } else {
@@ -163,6 +163,7 @@ class WorldEditorGame extends FlameGame with HasDraggableComponents, HasTappable
   }
 
   void setSize(Vector2 size) {
+    debugPrint('World editor: changing size to $size');
     currentComp.size = size;
   }
 
